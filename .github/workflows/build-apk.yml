@@ -1,0 +1,733 @@
+# ============================================================================
+# СЕМЕЙНЫЙ БЮДЖЕТ — автоматическая сборка APK (GitHub Actions)
+# ============================================================================
+# Как собрать APK:
+#   1. Загрузите файлы проекта в репозиторий GitHub целиком, включая
+#      скрытую папку .github (в ней сборочный скрипт и ключ подписи).
+#   2. Вкладка Actions -> «Семейный бюджет — сборка APK» -> включите
+#      workflow. При пуше в ветку main/master сборка запускается сама;
+#      можно запустить и вручную (Run workflow).
+#   3. Готовый APK публикуется в Releases (раздел Assets). Для остальных
+#      веток — на странице сборки, раздел Artifacts (хранение 3 дня).
+#
+# Подпись APK:
+#   По умолчанию APK подписывается ключом .github/keystore/debug.keystore
+#   (пароль android) — сборка работает сразу, без настройки секретов.
+#   Чтобы подписывать личным ключом (и сохранять возможность обновлять
+#   приложение поверх прежних установок при смене ключа), задайте секреты:
+#     BUDGET_KEYSTORE_BASE64     — base64-код вашего .keystore/.jks
+#                                  (команда: base64 -w0 файл.keystore)
+#     BUDGET_KEYSTORE_PASSWORD   — пароль хранилища ключей
+#     BUDGET_KEY_ALIAS           — имя ключа (алиас) внутри хранилища
+#     BUDGET_KEY_PASSWORD        — пароль ключа; можно не задавать, если он
+#                                  совпадает с паролем хранилища
+#   При следующей смене личного ключа дополнительно задайте BUDGET_PREV_*
+#   (те же четыре секрета для прежнего личного ключа) — цепочка подписей
+#   (proof-of-rotation) сохранится, APK продолжит ставиться поверх старых.
+#
+# Идентификатор приложения (APP_ID):
+#   Формируется из имени репозитория (кириллица переводится в латиницу):
+#   «Семейный_бюджет» -> com.budget.semeynyybyudzhet. Чтобы зафиксировать
+#   APP_ID навсегда (независимо от переименования репозитория), задайте
+#   переменную репозитория ANDROID_APP_ID (Settings -> Secrets and
+#   variables -> Actions -> Variables). После первой установки приложения
+#   менять APP_ID нельзя: это будет уже другое приложение со своими
+#   данными.
+#
+# Версия приложения:
+#   versionCode  = номер запуска сборки (растёт автоматически);
+#   versionName  = <meta name="app-version" content="..."> из index.html
+#                  (если метки нет — 1.0).
+# ============================================================================
+
+name: Семейный бюджет — сборка APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Новая сборка в той же ветке отменяет предыдущую незавершённую.
+concurrency:
+  group: apk-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 2b. Run application tests (if present)
+        run: |
+          if [ -f tests/regression.test.cjs ]; then
+            node tests/regression.test.cjs
+          else
+            echo "ℹ tests/regression.test.cjs не найден — тесты пропускаются."
+          fi
+
+      - name: 3. Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 3b. Setup Permanent Debug Keystore
+        env:
+          ROTATION_KEY_BASE64: ${{ secrets.BUDGET_KEYSTORE_BASE64 }}
+          ROTATION_STORE_PASS: ${{ secrets.BUDGET_KEYSTORE_PASSWORD }}
+          ROTATION_KEY_ALIAS: ${{ secrets.BUDGET_KEY_ALIAS }}
+          ROTATION_KEY_PASS: ${{ secrets.BUDGET_KEY_PASSWORD }}
+          ROTATION_PREV_BASE64: ${{ secrets.BUDGET_PREV_KEYSTORE_BASE64 }}
+          ROTATION_PREV_STORE_PASS: ${{ secrets.BUDGET_PREV_KEYSTORE_PASSWORD }}
+          ROTATION_PREV_KEY_ALIAS: ${{ secrets.BUDGET_PREV_KEY_ALIAS }}
+          ROTATION_PREV_KEY_PASS: ${{ secrets.BUDGET_PREV_KEY_PASSWORD }}
+        run: |
+          set -e
+          KEY_SOURCE=".github/keystore/debug.keystore"
+          KEY_TARGET="$HOME/.android/debug.keystore"
+
+          mkdir -p "$HOME/.android"
+
+          if [ -n "$ROTATION_KEY_BASE64" ]; then
+            # Ротация ключа: gradle по-прежнему подписывает сборку прежним ключом,
+            # новый личный ключ подключается на шаге 6b (apksigner + proof-of-rotation).
+            if [ -z "$ROTATION_STORE_PASS" ] || [ -z "$ROTATION_KEY_ALIAS" ]; then
+              echo "::error::Задан BUDGET_KEYSTORE_BASE64, но не хватает остальных секретов."
+              echo "Нужны BUDGET_KEYSTORE_PASSWORD и BUDGET_KEY_ALIAS."
+              echo "BUDGET_KEY_PASSWORD можно не задавать, если пароль ключа совпадает с паролем хранилища."
+              exit 1
+            fi
+            if [ -z "$ROTATION_KEY_PASS" ]; then
+              ROTATION_KEY_PASS="$ROTATION_STORE_PASS"
+              echo "ℹ BUDGET_KEY_PASSWORD не задан — используется пароль хранилища."
+            fi
+            printf '%s' "$ROTATION_KEY_BASE64" | base64 --decode > "$HOME/.android/release.keystore"
+            chmod 600 "$HOME/.android/release.keystore"
+            test -s "$HOME/.android/release.keystore"
+
+            # Ранняя проверка: хранилище открывается, алиас существует.
+            if ! keytool -list -keystore "$HOME/.android/release.keystore" \
+                 -storepass "$ROTATION_STORE_PASS" -alias "$ROTATION_KEY_ALIAS" >/dev/null 2>&1; then
+              echo "::error::Новый ключ не читается: неверный пароль хранилища или алиас."
+              echo "Алиасы можно посмотреть: keytool -list -keystore <файл> -storepass <пароль>"
+              exit 1
+            fi
+            echo "✓ Новый личный ключ:"
+            keytool -list -v -keystore "$HOME/.android/release.keystore" \
+              -storepass "$ROTATION_STORE_PASS" -alias "$ROTATION_KEY_ALIAS" \
+              | grep -E "Alias name:|Valid from|SHA256:"
+
+            # Прежний ключ остаётся в сборке: им подписываются v1/v2 и создаётся lineage.
+            cp "$KEY_SOURCE" "$KEY_TARGET"
+            chmod 600 "$KEY_TARGET"
+            test -s "$KEY_TARGET"
+            echo "✓ Прежний ключ (v1/v2 и источник lineage):"
+            keytool -list -v -keystore "$KEY_TARGET" \
+              -alias androiddebugkey -storepass android \
+              | grep -E "Alias name:|SHA256:"
+
+            ROTATION_PREV_MODE=0
+            if [ -n "$ROTATION_PREV_BASE64" ]; then
+              # Вторая ротация: прежний личный ключ остаётся в цепочке истории.
+              if [ -z "$ROTATION_PREV_STORE_PASS" ] || [ -z "$ROTATION_PREV_KEY_ALIAS" ]; then
+                echo "::error::Задан BUDGET_PREV_KEYSTORE_BASE64 — нужны также BUDGET_PREV_KEYSTORE_PASSWORD и BUDGET_PREV_KEY_ALIAS."
+                exit 1
+              fi
+              if [ -z "$ROTATION_PREV_KEY_PASS" ]; then
+                ROTATION_PREV_KEY_PASS="$ROTATION_PREV_STORE_PASS"
+              fi
+              printf '%s' "$ROTATION_PREV_BASE64" | base64 --decode > "$HOME/.android/release-prev.keystore"
+              chmod 600 "$HOME/.android/release-prev.keystore"
+              if ! keytool -list -keystore "$HOME/.android/release-prev.keystore" \
+                   -storepass "$ROTATION_PREV_STORE_PASS" -alias "$ROTATION_PREV_KEY_ALIAS" >/dev/null 2>&1; then
+                echo "::error::Прежний личный ключ (BUDGET_PREV_*) не читается: неверный пароль или алиас."
+                exit 1
+              fi
+              ROTATION_PREV_MODE=1
+              echo "✓ Включена цепочка второй ротации (BUDGET_PREV_* → BUDGET_*)."
+            fi
+
+            {
+              echo "ROTATION_MODE=1"
+              echo "NEW_KS=$HOME/.android/release.keystore"
+              echo "NEW_KS_PASS=$ROTATION_STORE_PASS"
+              echo "NEW_KS_ALIAS=$ROTATION_KEY_ALIAS"
+              echo "NEW_KS_KEYPASS=$ROTATION_KEY_PASS"
+            } >> "$GITHUB_ENV"
+            if [ "$ROTATION_PREV_MODE" = "1" ]; then
+              {
+                echo "ROTATION_PREV_MODE=1"
+                echo "PREV_KS=$HOME/.android/release-prev.keystore"
+                echo "PREV_KS_PASS=$ROTATION_PREV_STORE_PASS"
+                echo "PREV_KS_ALIAS=$ROTATION_PREV_KEY_ALIAS"
+                echo "PREV_KS_KEYPASS=$ROTATION_PREV_KEY_PASS"
+              } >> "$GITHUB_ENV"
+            fi
+            echo "✓ Режим ротации включён: на шаге 6b APK перепишется подписью личного ключа."
+          elif [ -f "$KEY_SOURCE" ]; then
+            cp "$KEY_SOURCE" "$KEY_TARGET"
+            chmod 600 "$KEY_TARGET"
+            test -s "$KEY_TARGET"
+            echo "ℹ Секреты BUDGET_* не заданы: APK подписывается ключом из репозитория (ротация выключена)."
+          else
+            echo "::error::Не найден ключ подписи: $KEY_SOURCE"
+            exit 1
+          fi
+
+      - name: 4. Prepare Web Assets & Project Metadata
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          APP_NAME="Семейный бюджет"
+          # Идентификатор приложения из имени репозитория: латиница остаётся,
+          # кириллица переводится транслитерацией («Семейный_бюджет» -> semeynyybyudzhet).
+          CLEAN_ID=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]' \
+            | sed -e 's/а/a/gI;s/б/b/gI;s/в/v/gI;s/г/g/gI;s/д/d/gI;s/е/e/gI;s/ё/e/gI;s/ж/zh/gI;s/з/z/gI;s/и/i/gI;s/й/y/gI;s/к/k/gI;s/л/l/gI;s/м/m/gI;s/н/n/gI;s/о/o/gI;s/п/p/gI;s/р/r/gI;s/с/s/gI;s/т/t/gI;s/у/u/gI;s/ф/f/gI;s/х/h/gI;s/ц/ts/gI;s/ч/ch/gI;s/ш/sh/gI;s/щ/sch/gI;s/ъ//gI;s/ы/y/gI;s/ь//gI;s/э/e/gI;s/ю/yu/gI;s/я/ya/gI' \
+            | sed 's/[^a-z0-9]//g' | sed 's/^\([0-9]\)/a\1/')
+          # APP_ID можно зафиксировать переменной репозитория ANDROID_APP_ID.
+          FIXED_APP_ID="${{ vars.ANDROID_APP_ID }}"
+          APP_ID="${FIXED_APP_ID:-com.budget.${CLEAN_ID:-app}}"
+          echo "✓ APP_ID: $APP_ID (источник: имя репозитория «$REPO_NAME»)"
+
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+          echo "APP_ID=$APP_ID" >> $GITHUB_ENV
+          echo "APK_FILENAME=${REPO_NAME}.apk" >> $GITHUB_ENV
+
+          mkdir -p build_tmp/www
+          rsync -av --exclude='.git' --exclude='.github' --exclude='build_tmp' --exclude='native' --exclude='tests' --exclude='*.md' --exclude='*.yml' --exclude='*.zip' --exclude='README.txt' ./ build_tmp/www/
+
+          cd build_tmp
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/assets
+
+          npx cap init "$APP_NAME" "$APP_ID" --web-dir www
+          npx cap add android
+
+          if [ -f "www/icon.png" ]; then
+            mkdir -p assets
+            cp www/icon.png assets/icon.png
+            npx @capacitor/assets generate --android || true
+          fi
+
+          npx cap sync android
+
+      - name: 5. Inject Native Features, Versioning & Permissions
+        env:
+          TARGET_APP_ID: ${{ env.APP_ID }}
+          RUN_NUM: ${{ github.run_number }}
+          FIXED_VERSION_CODE: ${{ vars.ANDROID_VERSION_CODE }}
+        run: |
+          cd build_tmp
+
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
+
+          VERSION_CODE="${FIXED_VERSION_CODE:-$RUN_NUM}"
+          [[ "$VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || { echo "Invalid ANDROID_VERSION_CODE"; exit 1; }
+          sed -i "s/versionCode 1/versionCode $VERSION_CODE/g" android/app/build.gradle
+
+          # Версия приложения: meta app-version в index.html; если её нет — 1.0.
+          WEB_VERSION=$(sed -n 's/^.*<meta name="app-version" content="\([^"]*\)".*$/\1/p' www/index.html | head -n 1)
+          if [ -z "$WEB_VERSION" ]; then
+            WEB_VERSION=$(sed -n "s/^const APP_VERSION = '\([^']*\)';.*/\1/p" www/app.js 2>/dev/null | head -n 1)
+          fi
+          if [ -z "$WEB_VERSION" ]; then
+            WEB_VERSION="1.0"
+            echo "ℹ Метка версии не найдена (meta app-version в index.html) — используется 1.0."
+          fi
+          sed -i "s/versionName \"1.0\"/versionName \"$WEB_VERSION.$VERSION_CODE\"/g" android/app/build.gradle
+          echo "✓ versionName: $WEB_VERSION.$VERSION_CODE (versionCode: $VERSION_CODE)"
+
+          # Явно привязываем debug-сборку к постоянному ключу.
+          python3 - << 'PY'
+          from pathlib import Path
+          p = Path("android/app/build.gradle")
+          text = p.read_text(encoding="utf-8")
+
+          if "signingConfig signingConfigs.debug" not in text:
+              text = text.replace(
+                  "android {",
+                  """android {
+              signingConfigs {
+                  debug {
+                      storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
+                      storePassword "android"
+                      keyAlias "androiddebugkey"
+                      keyPassword "android"
+                  }
+              }""",
+                  1
+              )
+              text = text.replace(
+                  "buildTypes {",
+                  """buildTypes {
+                  debug {
+                      signingConfig signingConfigs.debug
+                  }""",
+                  1
+              )
+
+          p.write_text(text, encoding="utf-8")
+          PY
+
+          python3 - << 'EOF'
+          manifest_path = "android/app/src/main/AndroidManifest.xml"
+          with open(manifest_path, "r", encoding="utf-8") as f:
+              content = f.read()
+
+          # Приложение полностью офлайн: из разрешений нужен только доступ в сеть
+          # для самого WebView (внешние ссылки) и состояния сети.
+          needed_permissions = [
+              "android.permission.INTERNET",
+              "android.permission.ACCESS_NETWORK_STATE",
+          ]
+          missing = [p for p in needed_permissions if p not in content]
+          if missing:
+              block = "\n".join(
+                  '    <uses-permission android:name="%s" />' % p for p in missing
+              )
+              content = content.replace("<application", block + "\n    <application", 1)
+
+          # Android Auto Backup хранит копию данных приложения в личном Google
+          # Drive владельца: история трат переживёт смену или потерю телефона.
+          # Для финансового трекера потерять записи больнее, чем резервная копия.
+          content = content.replace('android:allowBackup="false"', 'android:allowBackup="true"')
+
+          with open(manifest_path, "w", encoding="utf-8") as f:
+              f.write(content)
+          EOF
+
+          PACKAGE_PATH=$(echo "$TARGET_APP_ID" | tr '.' '/')
+          PACKAGE_DIR="android/app/src/main/java/$PACKAGE_PATH"
+          mkdir -p "$PACKAGE_DIR"
+
+          cat << 'JAVAEOF' > "$PACKAGE_DIR/MainActivity.java"
+          package __APP_ID__;
+
+          import android.app.Activity;
+          import android.app.DownloadManager;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.util.Base64;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.webkit.DownloadListener;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebView;
+          import android.widget.Toast;
+          import androidx.activity.OnBackPressedCallback;
+          import com.getcapacitor.BridgeActivity;
+          import org.json.JSONObject;
+          import java.io.OutputStream;
+          import java.util.Locale;
+
+          /**
+           * «Семейный бюджет»: WebView-обёртка над офлайн-страницей index.html.
+           * Нативная часть добавляет три вещи:
+           *  1) кнопки «Скачать» приложения создают blob:-ссылки — содержимое
+           *     вынимается через fetch внутри страницы и сохраняется системным
+           *     диалогом «Сохранить как» (SAF);
+           *  2) внешние http(s)-ссылки отдаются системному DownloadManager;
+           *  3) кнопка «Назад» сворачивает приложение, не убивая его,
+           *     чтобы не терять введённые данные.
+           */
+          public class MainActivity extends BridgeActivity {
+              private static final int CREATE_FILE_REQUEST_CODE = 1001;
+              private String pendingDataB64 = "";
+              private String pendingName = "";
+              private String pendingMime = "";
+
+              @Override
+              protected void load() {
+                  // BridgeActivity уже создал разметку, но страницу ещё не загрузил:
+                  // ставим мост и обработчик загрузок до первой навигации.
+                  WebView webView = findAppWebView(findViewById(android.R.id.content));
+                  if (webView == null) throw new IllegalStateException("Capacitor WebView not found");
+                  webView.getSettings().setJavaScriptEnabled(true);
+                  webView.getSettings().setDomStorageEnabled(true); // localStorage с данными приложения
+                  webView.getSettings().setAllowFileAccess(true);
+                  webView.addJavascriptInterface(new BudgetFiles(MainActivity.this), "BudgetFiles");
+                  webView.setDownloadListener(new BudgetDownloadListener(this, webView));
+
+                  super.load();
+
+                  // «Назад»: если страница не обработала нажатие (window.handleAppBack),
+                  // сворачиваем приложение вместо завершения.
+                  getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+                      @Override
+                      public void handleOnBackPressed() {
+                          webView.evaluateJavascript(
+                                  "(function(){return typeof window.handleAppBack==='function'?window.handleAppBack():false;})()",
+                                  value -> {
+                                      if (!"true".equals(value)) moveTaskToBack(true);
+                                  });
+                      }
+                  });
+              }
+
+              private WebView findAppWebView(View view) {
+                  if (view instanceof WebView) return (WebView) view;
+                  if (view instanceof ViewGroup) {
+                      ViewGroup group = (ViewGroup) view;
+                      for (int i = 0; i < group.getChildCount(); i++) {
+                          WebView found = findAppWebView(group.getChildAt(i));
+                          if (found != null) return found;
+                      }
+                  }
+                  return null;
+              }
+
+              /** Кнопки «Скачать» (сводка .txt, CSV, бэкап .json) используют
+               *  blob:-ссылки: читаем их содержимое из страницы и отдаём в SAF. */
+              private static class BudgetDownloadListener implements DownloadListener {
+                  private final MainActivity activity;
+                  private final WebView webView;
+
+                  BudgetDownloadListener(MainActivity activity, WebView webView) {
+                      this.activity = activity;
+                      this.webView = webView;
+                  }
+
+                  @Override
+                  public void onDownloadStart(final String url, final String userAgent,
+                                              final String contentDisposition, final String mimetype, long contentLength) {
+                      if (url != null && url.startsWith("blob:")) {
+                          final String name = guessName(contentDisposition, mimetype);
+                          final String mime = normalizeMime(mimetype, name);
+                          final String js = "(function(){"
+                                  + "fetch(" + JSONObject.quote(url) + ")"
+                                  + ".then(function(r){return r.blob()})"
+                                  + ".then(function(b){return new Promise(function(ok,err){"
+                                  + "var fr=new FileReader();"
+                                  + "fr.onload=function(){ok(fr.result)};"
+                                  + "fr.onerror=function(){ok('')};"
+                                  + "fr.readAsDataURL(b)})})"
+                                  + ".then(function(d){if(window.BudgetFiles)window.BudgetFiles.saveBlob(d,"
+                                  + JSONObject.quote(name) + "," + JSONObject.quote(mime) + ")})"
+                                  + ".catch(function(){if(window.BudgetFiles)window.BudgetFiles.saveBlob('',"
+                                  + JSONObject.quote(name) + "," + JSONObject.quote(mime) + ")})"
+                                  + "})()";
+                          activity.runOnUiThread(() -> webView.evaluateJavascript(js, null));
+                      } else if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                          try {
+                              DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                              request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                              DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+                              if (dm != null) dm.enqueue(request);
+                          } catch (Exception e) {
+                              Toast.makeText(activity, "Загрузка: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                          }
+                      } else {
+                          Toast.makeText(activity, "Загрузка недоступна — используйте «Скопировать»", Toast.LENGTH_LONG).show();
+                      }
+                  }
+              }
+
+              /** JS-мост: сохранение файла через системный диалог «Сохранить как». */
+              public class BudgetFiles {
+                  private final Context mContext;
+
+                  BudgetFiles(Context c) {
+                      mContext = c;
+                  }
+
+                  @JavascriptInterface
+                  public void saveBlob(final String dataUrl, final String fallbackName, final String fallbackMime) {
+                      ((Activity) mContext).runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              String b64 = "";
+                              String mime = normalizeMime(fallbackMime, fallbackName);
+                              if (dataUrl != null && dataUrl.startsWith("data:")) {
+                                  int comma = dataUrl.indexOf(',');
+                                  if (comma > 5) {
+                                      String meta = dataUrl.substring(5, comma);
+                                      if (meta.endsWith(";base64")) {
+                                          b64 = dataUrl.substring(comma + 1);
+                                          String m = meta.substring(0, meta.length() - ";base64".length());
+                                          if (!m.isEmpty()) mime = normalizeMime(m, fallbackName);
+                                      }
+                                  }
+                              }
+                              if (b64.isEmpty()) {
+                                  Toast.makeText(mContext, "Не удалось подготовить файл — используйте «Скопировать»",
+                                          Toast.LENGTH_LONG).show();
+                                  return;
+                              }
+                              pendingDataB64 = b64;
+                              pendingMime = mime;
+                              pendingName = ensureExt(fallbackName, mime);
+                              Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                              intent.addCategory(Intent.CATEGORY_OPENABLE);
+                              intent.setType(pendingMime);
+                              intent.putExtra(Intent.EXTRA_TITLE, pendingName);
+                              startActivityForResult(intent, CREATE_FILE_REQUEST_CODE);
+                          }
+                      });
+                  }
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == CREATE_FILE_REQUEST_CODE) {
+                      if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                          writePendingFile(data.getData());
+                      } else {
+                          pendingDataB64 = ""; // пользователь отменил диалог — это не ошибка
+                      }
+                  }
+              }
+
+              private void writePendingFile(Uri uri) {
+                  String name = pendingName;
+                  try {
+                      byte[] bytes = Base64.decode(pendingDataB64, Base64.DEFAULT);
+                      OutputStream os = getContentResolver().openOutputStream(uri);
+                      if (os == null) throw new Exception("нет потока записи");
+                      os.write(bytes);
+                      os.close();
+                      Toast.makeText(this, "Файл сохранён: " + name, Toast.LENGTH_SHORT).show();
+                  } catch (Exception e) {
+                      Toast.makeText(this, "Ошибка сохранения: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                  } finally {
+                      pendingDataB64 = "";
+                  }
+              }
+
+              /** "text/csv;charset=utf-8" -> "text/csv"; пустое значение выводится из имени файла. */
+              private static String normalizeMime(String mime, String name) {
+                  if (mime != null && !mime.isEmpty()) {
+                      int sc = mime.indexOf(';');
+                      return sc >= 0 ? mime.substring(0, sc) : mime;
+                  }
+                  String n = name == null ? "" : name.toLowerCase(Locale.US);
+                  if (n.endsWith(".json")) return "application/json";
+                  if (n.endsWith(".csv")) return "text/csv";
+                  if (n.endsWith(".txt")) return "text/plain";
+                  return "application/octet-stream";
+              }
+
+              /** Имя файла: сначала заголовок contentDisposition, иначе — по типу. */
+              private static String guessName(String contentDisposition, String mime) {
+                  if (contentDisposition != null) {
+                      java.util.regex.Matcher m = java.util.regex.Pattern
+                              .compile("filename\\*?=\"?([^\";]+)\"?", java.util.regex.Pattern.CASE_INSENSITIVE)
+                              .matcher(contentDisposition);
+                      if (m.find()) return m.group(1).trim();
+                  }
+                  String base = "budget-export";
+                  String mm = normalizeMime(mime, null);
+                  if ("application/json".equals(mm)) return base + ".json";
+                  if ("text/csv".equals(mm)) return base + ".csv";
+                  if ("text/plain".equals(mm)) return base + ".txt";
+                  return base;
+              }
+
+              /** У системного диалога имя можно поменять; расширение лишь подсказка. */
+              private static String ensureExt(String name, String mime) {
+                  String n = (name == null || name.trim().isEmpty()) ? "budget-export" : name.trim();
+                  String lower = n.toLowerCase(Locale.US);
+                  if ("application/json".equals(mime) && !lower.endsWith(".json")) return n + ".json";
+                  if ("text/csv".equals(mime) && !lower.endsWith(".csv")) return n + ".csv";
+                  if ("text/plain".equals(mime) && !lower.endsWith(".txt")) return n + ".txt";
+                  return n;
+              }
+          }
+          JAVAEOF
+
+          sed -i "s/__APP_ID__/$TARGET_APP_ID/g" "$PACKAGE_DIR/MainActivity.java"
+
+      - name: 6. Fix Gradle Wrapper & Compile APK
+        run: |
+          cd build_tmp/android
+
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's|^distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-bin.zip|' gradle/wrapper/gradle-wrapper.properties
+            cat gradle/wrapper/gradle-wrapper.properties
+          fi
+
+          chmod +x gradlew
+
+          for i in 1 2 3; do
+            if ./gradlew assembleDebug --warning-mode none --no-daemon; then
+              break
+            fi
+            echo "Gradle attempt $i failed, retry..."
+            sleep 5
+            if [ "$i" = "3" ]; then
+              exit 1
+            fi
+          done
+
+          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK_PATH"
+
+          # Проверяем, что APK подписан именно постоянным ключом.
+          echo "✓ Проверка подписи APK:"
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK_PATH"
+
+          mv "$APK_PATH" ../../${{ env.APK_FILENAME }}
+
+      - name: 6b. Rotate Signing Key (proof-of-rotation)
+        run: |
+          set -e
+          if [ "${ROTATION_MODE:-0}" != "1" ]; then
+            echo "ℹ Ротация выключена (секреты BUDGET_* не заданы): APK остаётся на ключе из репозитория."
+            exit 0
+          fi
+
+          APK_FILE="${{ env.APK_FILENAME }}"
+          OLD_KS=".github/keystore/debug.keystore"
+          NEW_KS_PATH="${NEW_KS:-$HOME/.android/release.keystore}"
+
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)
+          ZIPALIGN=$(find "$ANDROID_HOME/build-tools" -type f -name zipalign | sort -V | tail -n 1)
+          test -n "$APKSIGNER" -a -n "$ZIPALIGN"
+          test -f "$APK_FILE" -a -f "$OLD_KS" -a -f "$NEW_KS_PATH"
+
+          # 1) zipalign до подписи (v2/v3 вычисляются по выровненному файлу).
+          if "$ZIPALIGN" -c -p 4 "$APK_FILE"; then
+            echo "✓ APK уже выровнен."
+          else
+            "$ZIPALIGN" -f -p 4 "$APK_FILE" "$APK_FILE.aligned"
+            mv "$APK_FILE.aligned" "$APK_FILE"
+            echo "✓ APK выровнен заново."
+          fi
+
+          # 2) Автодетект пароля приватного ключа: keytool (PKCS12) часто защищает ключ
+          #    паролем хранилища, даже если при создании указывался отдельный -keypass.
+          probe_key_pass() {
+            rm -f "$RUNNER_TEMP/probe.apk"
+            "$APKSIGNER" sign \
+              --ks "$1" --ks-key-alias "$2" \
+              --ks-pass "pass:$3" --key-pass "pass:$4" \
+              --out "$RUNNER_TEMP/probe.apk" "$APK_FILE" >/dev/null 2>&1
+          }
+          if probe_key_pass "$NEW_KS_PATH" "$NEW_KS_ALIAS" "$NEW_KS_PASS" "$NEW_KS_KEYPASS"; then
+            USE_KEYPASS="$NEW_KS_KEYPASS"
+            echo "✓ Пароль приватного ключа: BUDGET_KEY_PASSWORD."
+          elif probe_key_pass "$NEW_KS_PATH" "$NEW_KS_ALIAS" "$NEW_KS_PASS" "$NEW_KS_PASS"; then
+            USE_KEYPASS="$NEW_KS_PASS"
+            echo "⚠ Отдельный пароль ключа не подошёл — ключ защищён паролем хранилища (типично для keytool PKCS12)."
+          else
+            echo "::error::Приватный ключ не читается: не подошли ни BUDGET_KEY_PASSWORD, ни BUDGET_KEYSTORE_PASSWORD."
+            echo "Алиасы можно посмотреть: keytool -list -keystore <файл> -storepass <пароль>"
+            exit 1
+          fi
+
+          # 3) Lineage: прежний ключ заверяет переход на новый (APK Signature Scheme v3).
+          LINEAGE="$RUNNER_TEMP/lineage.bin"
+          rm -f "$LINEAGE" "$LINEAGE.stage1"
+          if [ "${ROTATION_PREV_MODE:-0}" = "1" ]; then
+            test -f "$PREV_KS"
+            if probe_key_pass "$PREV_KS" "$PREV_KS_ALIAS" "$PREV_KS_PASS" "$PREV_KS_KEYPASS"; then
+              PREV_USE_KEYPASS="$PREV_KS_KEYPASS"
+            elif probe_key_pass "$PREV_KS" "$PREV_KS_ALIAS" "$PREV_KS_PASS" "$PREV_KS_PASS"; then
+              PREV_USE_KEYPASS="$PREV_KS_PASS"
+              echo "⚠ Прежний личный ключ защищён паролем хранилища."
+            else
+              echo "::error::Прежний личный ключ (BUDGET_PREV_*) не читается: проверьте его секреты."
+              exit 1
+            fi
+            "$APKSIGNER" rotate \
+              --out "$LINEAGE.stage1" \
+              --old-signer --ks "$OLD_KS" --ks-key-alias androiddebugkey \
+                --ks-pass pass:android --key-pass pass:android \
+              --new-signer --ks "$PREV_KS" --ks-key-alias "$PREV_KS_ALIAS" \
+                --ks-pass "pass:$PREV_KS_PASS" --key-pass "pass:$PREV_USE_KEYPASS"
+            "$APKSIGNER" rotate \
+              --in "$LINEAGE.stage1" --out "$LINEAGE" \
+              --old-signer --ks "$PREV_KS" --ks-key-alias "$PREV_KS_ALIAS" \
+                --ks-pass "pass:$PREV_KS_PASS" --key-pass "pass:$PREV_USE_KEYPASS" \
+              --new-signer --ks "$NEW_KS_PATH" --ks-key-alias "$NEW_KS_ALIAS" \
+                --ks-pass "pass:$NEW_KS_PASS" --key-pass "pass:$USE_KEYPASS"
+            echo "✓ Цепочка второй ротации: прежний личный ключ → новый личный ключ."
+          else
+            "$APKSIGNER" rotate \
+              --out "$LINEAGE" \
+              --old-signer --ks "$OLD_KS" --ks-key-alias androiddebugkey \
+                --ks-pass pass:android --key-pass pass:android \
+              --new-signer --ks "$NEW_KS_PATH" --ks-key-alias "$NEW_KS_ALIAS" \
+                --ks-pass "pass:$NEW_KS_PASS" --key-pass "pass:$USE_KEYPASS"
+          fi
+          test -s "$LINEAGE"
+          echo "✓ Lineage (proof-of-rotation): $(wc -c < "$LINEAGE") байт."
+
+          # 4) Переподпись: v3 — новый личный ключ (Android 9+), v1/v2 — прежний (Android 5–8).
+          "$APKSIGNER" sign \
+            --ks "$NEW_KS_PATH" --ks-key-alias "$NEW_KS_ALIAS" \
+              --ks-pass "pass:$NEW_KS_PASS" --key-pass "pass:$USE_KEYPASS" \
+            --ks "$OLD_KS" --ks-key-alias androiddebugkey \
+              --ks-pass pass:android --key-pass pass:android \
+            --lineage "$LINEAGE" \
+            --rotation-min-sdk-version 28 \
+            --v1-signing-enabled true --v2-signing-enabled true \
+            --v3-signing-enabled true --v4-signing-enabled false \
+            --out "$APK_FILE.rotated" "$APK_FILE"
+          mv "$APK_FILE.rotated" "$APK_FILE"
+
+          # 5) Контрольная проверка подписи.
+          "$APKSIGNER" verify --print-certs "$APK_FILE" || true
+          "$APKSIGNER" verify --verbose "$APK_FILE" > "$RUNNER_TEMP/verify.txt" || true
+          head -n 12 "$RUNNER_TEMP/verify.txt"
+          grep -q "Verified using v3 scheme (APK Signature Scheme v3): true" "$RUNNER_TEMP/verify.txt" || {
+            echo "::error::v3-подпись не подтвердилась: Android 9+ не увидит ротацию."
+            exit 1
+          }
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" "$RUNNER_TEMP/verify.txt" || {
+            echo "::error::v2-подпись не подтвердилась."
+            exit 1
+          }
+          echo "✓ APK переподписан: v3 — новый личный ключ (Android 9+), v1/v2 — прежний (Android 5–8)."
+          echo "  Установка поверх прежней версии работает на любом Android от 5.1."
+
+      # Release must not depend on the separate Actions artifact storage quota.
+      - name: 7. Publish GitHub Release
+        id: publish_release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag_name: v${{ github.run_number }}
+          name: ${{ env.APP_NAME }} v${{ github.run_number }}
+          files: ${{ env.APK_FILENAME }}
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Other branches have no Release: their artifact is the only download,
+      # so an upload failure must remain visible as a failed build.
+      - name: 8. Upload APK for non-release branch
+        id: upload_apk_artifact
+        if: steps.publish_release.outcome == 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-APK
+          path: ${{ env.APK_FILENAME }}
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: 9. Show APK download link
+        env:
+          RELEASE_URL: ${{ steps.publish_release.outputs.url }}
+        run: |
+          if [ -n "$RELEASE_URL" ]; then
+            printf '### APK готов\n\n[Открыть выпуск и скачать APK](%s) — раздел **Assets**.\n\nКопия в Actions Artifacts не создаётся.\n' "$RELEASE_URL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '### APK готов\n\n[Открыть сборку](%s/%s/actions/runs/%s) и скачать APK из **Artifacts**. Срок хранения: 3 дня.\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+          fi
