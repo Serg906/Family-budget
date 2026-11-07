@@ -38,6 +38,12 @@
 #   versionCode  = номер запуска сборки (растёт автоматически);
 #   versionName  = <meta name="app-version" content="..."> из index.html
 #                  (если метки нет — 1.0).
+#
+# Сканер чеков (v1.1):
+#   CAMERA в манифесте нужна для живого сканирования QR-кода чека камерой
+#   (WebView getUserMedia, диалог пользователю показывает Capacitor).
+#   Без камеры работают «Сделать фото», «Выбрать снимок» и ручной ввод —
+#   приложение ставится на любые устройства (uses-feature required=false).
 # ============================================================================
 
 name: Семейный бюджет — сборка APK
@@ -286,10 +292,12 @@ jobs:
               content = f.read()
 
           # Приложение полностью офлайн: из разрешений нужен только доступ в сеть
-          # для самого WebView (внешние ссылки) и состояния сети.
+          # для самого WebView (внешние ссылки), состояния сети и камера для
+          # сканера чеков (getUserMedia; диалог разрешения Capacitor показывает сам).
           needed_permissions = [
               "android.permission.INTERNET",
               "android.permission.ACCESS_NETWORK_STATE",
+              "android.permission.CAMERA",
           ]
           missing = [p for p in needed_permissions if p not in content]
           if missing:
@@ -297,6 +305,16 @@ jobs:
                   '    <uses-permission android:name="%s" />' % p for p in missing
               )
               content = content.replace("<application", block + "\n    <application", 1)
+
+          # Сканер чеков — не обязательная функция: приложение должно ставиться
+          # и на устройствах без камеры (остаются «Сделать фото», «Выбрать
+          # снимок» и ручной ввод).
+          if 'android.hardware.camera"' not in content:
+              content = content.replace(
+                  "<application",
+                  '    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application',
+                  1,
+              )
 
           # Android Auto Backup хранит копию данных приложения в личном Google
           # Drive владельца: история трат переживёт смену или потерю телефона.
