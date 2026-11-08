@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#059669">
-<meta name="app-version" content="1.6">
+<meta name="app-version" content="1.8">
 <meta name="description" content="Быстрый учёт семейных трат: купили — внесли. Категории, регулярные платежи, аналитика и готовый запрос для ИИ: что семье положено и как сэкономить. Работает офлайн.">
 <title>Семейный бюджет — учёт трат</title>
 <style>
@@ -195,10 +195,16 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .mrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .mrow .inp{flex:1;min-width:0}
 .mrow .myear{flex:none;width:104px;text-align:center}
+.irow{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.irow .ilabel{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.irow .inp{flex:none;width:132px;text-align:right}
 .finfo{font-size:12.5px;color:var(--mutfg);line-height:1.55;margin:12px 0 0}
 .finfo b{color:var(--ink)}
 .anb{padding:16px;margin-bottom:14px}
 .anb .btn{width:100%}
+.anb .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.anb .top .k{font-size:13px;color:var(--mutfg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.anb .top .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none;display:flex;align-items:center}
 .brow{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .brow.ok{border-color:rgba(5,150,105,.5);background:rgba(5,150,105,.05)}
 .brow .bt{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -215,6 +221,7 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .frow .inp{flex:1}
 .crow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--border)}
 .crow:first-child{border-top:0}
+.crow .cded{flex:none;width:138px;height:36px;font-size:12px;padding:0 6px;border-radius:10px}
 .cname{flex:1;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .pal{display:flex;flex-wrap:wrap;gap:10px}
 .pal button{width:36px;height:36px;border-radius:999px;border:2.5px solid transparent;cursor:pointer;padding:0}
@@ -224,6 +231,26 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .swrow{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--border);border-radius:12px;padding:12px 14px}
 .swrow .t{font-size:14px;font-weight:600}
 .swrow .s{font-size:11.5px;color:var(--mutfg)}
+
+/* ---------- Вычеты и Яндекс Диск ---------- */
+.dedline{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.dedline .dt{font-size:14px;font-weight:600;flex:1;min-width:0}
+.dedline .ds{display:block;font-size:11.5px;color:var(--mutfg);font-weight:400;margin-top:1px}
+.dbadge{display:inline-block;background:rgba(5,150,105,.12);color:#059669;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:6px;vertical-align:1px;white-space:nowrap;flex:none}
+.dlim{margin:8px 0 2px}
+.dlim .t{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mutfg);margin-bottom:3px;gap:8px}
+.dlim .t span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.dlim .t b{color:var(--ink);font-weight:600;white-space:nowrap;flex:none}
+.dedrow{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+.dedrow:first-child{border-top:0}
+.dthumb{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex:none;cursor:pointer;background:var(--muted);display:block}
+.dbig{width:100%;border-radius:12px;display:block}
+.dyears{display:flex;gap:6px;margin:2px 0 12px;flex-wrap:wrap}
+.dyears button{height:34px;padding:0 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--mutfg);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.dyears button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.deddocs{background:var(--amber-bg);color:var(--amber-tx);font-size:12px;border-radius:12px;padding:10px 12px;line-height:1.5;margin-top:12px}
+.photoline{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.photoline .btn{flex:1}
 
 /* ---------- Диалоги ---------- */
 .ovl{position:fixed;inset:0;background:rgba(24,24,27,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fadein .15s}
@@ -298,6 +325,26 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
           <label for="qaMember">Кто потратил</label>
           <select class="inp" id="qaMember"></select>
         </div>
+      </div>
+      <div class="fld" style="margin:14px 0 0">
+        <label>Фото чека</label>
+        <div class="photoline" id="qaPhotoLine">
+          <img class="dthumb" id="qaPhotoImg" alt="Фото чека" hidden>
+          <button type="button" class="btn" id="qaPhotoBtn">Прикрепить снимок чека</button>
+          <button type="button" class="iconbtn" id="qaPhotoDel" aria-label="Убрать фото" hidden></button>
+          <input type="file" id="qaPhotoFile" accept="image/*" hidden>
+        </div>
+      </div>
+      <div class="dedline">
+        <button type="button" class="sw" id="qaDedSw" aria-label="Трата даёт налоговый вычет"></button>
+        <span class="dt">Налоговый вычет<span class="ds">Лечение, обучение, фитнес — вернётся до 13% НДФЛ</span></span>
+      </div>
+      <div id="qaDedExtra" hidden>
+        <div class="fld" style="margin-bottom:0">
+          <label for="qaDedType">Что это за трата</label>
+          <select class="inp" id="qaDedType"></select>
+        </div>
+        <p class="hint" id="qaDedHint" style="text-align:left;margin:8px 0 0"></p>
       </div>
     </div>
 
@@ -380,12 +427,10 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
     <div class="shead" style="margin-bottom:10px">Доход и регион</div>
     <div class="card scard">
       <div class="fld" style="margin-bottom:10px">
-        <label for="setIncome">Месячный доход «чистыми», ₽</label>
-        <div class="frow">
-          <input class="inp" id="setIncome" inputmode="decimal" placeholder="Например: 115000">
-          <button type="button" class="btn pri" id="setIncomeOk" style="padding:0 18px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>ОК</button>
-        </div>
-        <p class="hint" style="text-align:left;margin:8px 0 0">Можно указать средний, если доход плавает. Нужен для расчёта долей в аналитике и запроса для ИИ.</p>
+        <label>Месячный доход «чистыми», ₽ — кто сколько приносит</label>
+        <div id="setIncRows"></div>
+        <p class="finfo" id="setIncTotal" hidden></p>
+        <p class="hint" style="text-align:left;margin:8px 0 0">Доход каждого сохраняется отдельно: в аналитике видно вклад каждого, а возврат НДФЛ по чекам сверяется с налогом того, кто зарабатывает. Детям можно указать пособия и подработки. Если делить не хотите — заполните только «Прочее / общий».</p>
       </div>
       <div class="fld" style="margin-top:14px">
         <label for="setRegion">Регион (субъект РФ)</label>
@@ -447,11 +492,36 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
       </div>
     </div>
 
+    <div class="shead" style="margin:18px 0 10px">Чеки и налоговые вычеты</div>
+    <div class="card scard">
+      <div class="swrow" style="margin-bottom:12px">
+        <div><div class="t">Сохранять фото чеков при сканировании</div>
+        <div class="s">Снимок хранится в приложении и готов для налоговой</div></div>
+        <button type="button" class="sw" id="setSavePhotos"></button>
+      </div>
+      <div class="fld" style="margin:0">
+        <label for="setNdfl">Ставка НДФЛ для расчёта возврата</label>
+        <select class="inp" id="setNdfl">
+          <option value="13">13% — доход до 2,4 млн ₽/год</option>
+          <option value="15">15% — доход 2,4–5 млн ₽/год</option>
+          <option value="18">18% — доход 5–20 млн ₽/год</option>
+          <option value="20">20% — доход 20–50 млн ₽/год</option>
+          <option value="22">22% — доход выше 50 млн ₽/год</option>
+        </select>
+        <p class="hint" style="text-align:left;margin:8px 0 0">Возврат считается по ставке, с которой вы платите НДФЛ. При плавающем доходе ставьте меньшую.</p>
+      </div>
+    </div>
+
     <div class="shead" style="margin:18px 0 10px;justify-content:space-between">Категории
       <button type="button" class="btn" id="setCatAdd" style="height:38px;padding:0 14px;font-size:13px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Своя категория</button>
     </div>
     <div class="card rows" id="setCats"></div>
-    <p class="foot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4"/></svg><span id="setCatsHint">Выключите переключатель, чтобы спрятать ненужную категорию из ввода.</span></p>
+    <p class="foot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4"/></svg><span id="setCatsHint">Выключите переключатель, чтобы спрятать ненужную категорию из ввода. Селект «вычет» помечает траты этой категории для налогового возврата.</span></p>
+
+    <div class="shead" style="margin:18px 0 10px">Яндекс Диск — облако для чеков</div>
+    <div class="card scard" id="setDiskCard">
+      <div id="setDiskBody"></div>
+    </div>
 
     <div class="shead" style="margin:18px 0 10px">Данные</div>
     <div class="dz">
@@ -744,17 +814,23 @@ var DEFAULT_CATEGORIES = [
   { id: 'housing', name: 'ЖКХ и дом', icon: 'home', color: '#7c3aed' },
   { id: 'subs', name: 'Связь и подписки', icon: 'phone', color: '#8b5cf6' },
   { id: 'kids', name: 'Дети', icon: 'baby', color: '#ec4899' },
-  { id: 'health', name: 'Здоровье', icon: 'health', color: '#ef4444' },
+  { id: 'health', name: 'Здоровье', icon: 'health', color: '#ef4444', deduction: 'med' },
   { id: 'clothes', name: 'Одежда', icon: 'shirt', color: '#14b8a6' },
   { id: 'fun', name: 'Досуг', icon: 'fun', color: '#f59e0b' },
   { id: 'big', name: 'Крупные покупки', icon: 'big', color: '#64748b' },
   { id: 'other', name: 'Другое', icon: 'tag', color: '#94a3b8' },
 ];
 
+function defaultDisk() {
+  return { clientId: '', clientSecret: '', token: '', tokenExp: 0, login: '', folder: 'Приложения/Семейный бюджет', auto: true, lastSync: '' };
+}
+
 function defaultData() {
   return {
     version: 1,
     income: 0,
+    memberIncome: {},
+    incomeCommon: 0,
     region: '',
     housing: '',
     cars: '',
@@ -766,6 +842,9 @@ function defaultData() {
     regulars: [],
     claims: {},
     claimsNotes: '',
+    deductionRate: 13,
+    saveReceiptPhotos: true,
+    disk: defaultDisk(),
   };
 }
 
@@ -815,9 +894,19 @@ function loadBudget() {
     if (!raw) return defaultData();
     var parsed = JSON.parse(raw);
     if (!looksValid(parsed)) throw new Error('bad shape');
+    var diskRaw = (parsed.disk && typeof parsed.disk === 'object' && !Array.isArray(parsed.disk)) ? parsed.disk : {};
+    var disk = defaultDisk();
+    ['clientId', 'clientSecret', 'token', 'login', 'folder', 'lastSync'].forEach(function (k) {
+      if (typeof diskRaw[k] === 'string') disk[k] = diskRaw[k];
+    });
+    if (isFiniteNum(diskRaw.tokenExp)) disk.tokenExp = diskRaw.tokenExp;
+    if (diskRaw.auto === false) disk.auto = false;
+    var inc = sanitizeIncome(parsed);
     return {
       version: 1,
-      income: isFiniteNum(parsed.income) ? parsed.income : 0,
+      income: inc.total,
+      memberIncome: inc.memberIncome,
+      incomeCommon: inc.incomeCommon,
       region: (typeof parsed.region === 'string') ? parsed.region : '',
       housing: (typeof parsed.housing === 'string') ? parsed.housing : '',
       cars: (typeof parsed.cars === 'string') ? parsed.cars : '',
@@ -829,6 +918,9 @@ function loadBudget() {
       regulars: parsed.regulars,
       claims: (parsed.claims && typeof parsed.claims === 'object' && !Array.isArray(parsed.claims)) ? parsed.claims : {},
       claimsNotes: typeof parsed.claimsNotes === 'string' ? parsed.claimsNotes : '',
+      deductionRate: isFiniteNum(parsed.deductionRate) ? parsed.deductionRate : 13,
+      saveReceiptPhotos: parsed.saveReceiptPhotos !== false,
+      disk: disk,
     };
   } catch (e) {
     // Повреждённые данные не теряем — бэкапим под другим ключом
@@ -847,6 +939,187 @@ function saveBudget(data) {
 
 function clearBudget() {
   try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+}
+
+/* Чистим доход по участникам; старые данные (только income) переносим
+   в «Прочее / общий», чтобы ни одна цифра не потерялась при обновлении. */
+function sanitizeIncome(d) {
+  var memberIncome = {};
+  if (d.memberIncome && typeof d.memberIncome === 'object' && !Array.isArray(d.memberIncome)) {
+    Object.keys(d.memberIncome).forEach(function (k) {
+      var v = d.memberIncome[k];
+      if (isFiniteNum(v) && v > 0) memberIncome[k] = v;
+    });
+  }
+  var incomeCommon = (isFiniteNum(d.incomeCommon) && d.incomeCommon > 0) ? d.incomeCommon : 0;
+  var legacy = isFiniteNum(d.income) && d.income > 0 ? d.income : 0;
+  if (!Object.keys(memberIncome).length && !incomeCommon && legacy > 0) {
+    incomeCommon = legacy; /* v1.7 и старше: общий доход без разбивки */
+  }
+  return {
+    memberIncome: memberIncome,
+    incomeCommon: incomeCommon,
+    total: Math.round(Object.keys(memberIncome).reduce(function (s, k) { return s + memberIncome[k]; }, 0) + incomeCommon),
+  };
+}
+
+/* =====================================================================
+   НАЛОГОВЫЕ ВЫЧЕТЫ ПО ЧЕКАМ
+   Лечение (обычное), обучение своё, фитнес и ДМС входят в общий
+   социальный лимит 150 000 ₽/год (по расходам с 2025 года);
+   обучение детей — отдельный лимит 110 000 ₽/год на каждого ребёнка;
+   дорогостоящее лечение — без лимита. Возврат — по ставке НДФЛ.
+   ===================================================================== */
+
+var DEDUCTIONS = {
+  med:      { name: 'Лечение и лекарства', short: 'лечение', group: 'social', limit: 150000,
+              docs: 'чек + справка об оплате медуслуг (выдаёт клиника); на лекарства — рецепт врача с отметкой для налоговой' },
+  fitness:  { name: 'Фитнес и спорт', short: 'фитнес', group: 'social', limit: 150000,
+              docs: 'чек + справка об оплате физкультурно-оздоровительных услуг (вычет действует с 2024 года)' },
+  eduSelf:  { name: 'Моё обучение', short: 'обучение своё', group: 'social', limit: 150000,
+              docs: 'договор с образовательной организацией + чек' },
+  dms:      { name: 'ДМС, страхование жизни', short: 'ДМС', group: 'social', limit: 150000,
+              docs: 'договор страхования сроком от 5 лет + чек' },
+  medExp:   { name: 'Дорогостоящее лечение', short: 'дорогостоящее', group: 'expensive', limit: 0,
+              docs: 'чек + справка об оплате медуслуг с кодом «2» (дорогостоящее): импланты, ЭКО, протезы — перечень Правительства № 201' },
+  eduChild: { name: 'Обучение ребёнка', short: 'обучение детей', group: 'child', limit: 110000,
+              docs: 'договор + чек; очная форма, ребёнку до 24 лет. Указывайте, кто из детей, в поле «Кто потратил»' },
+};
+
+var SOCIAL_LIMIT = 150000;
+var CHILD_LIMIT = 110000;
+
+function deductionRatePct() {
+  var r = isFiniteNum(data.deductionRate) ? data.deductionRate : 13;
+  return r > 0 && r <= 50 ? r : 13;
+}
+
+/* Расчёт вычетов за год: суммы по типам, лимиты и возврат */
+function calcDeductions(year) {
+  var rows = data.expenses.filter(function (e) {
+    return e.deduction && DEDUCTIONS[e.deduction] && String(e.date || '').slice(0, 4) === String(year);
+  });
+  var sums = {};
+  rows.forEach(function (e) { sums[e.deduction] = (sums[e.deduction] || 0) + e.amount; });
+  var social = (sums.med || 0) + (sums.fitness || 0) + (sums.eduSelf || 0) + (sums.dms || 0);
+  var socialCap = Math.min(social, SOCIAL_LIMIT);
+  var expensive = sums.medExp || 0;
+  /* Обучение детей: лимит 110 000 ₽ на каждого ребёнка. Расходы без
+     привязки к члену семьи считаем одним общим пулом (консервативно). */
+  var childGroups = {};
+  rows.forEach(function (e) {
+    if (e.deduction !== 'eduChild') return;
+    var key = e.memberId || '';
+    childGroups[key] = (childGroups[key] || 0) + e.amount;
+  });
+  var childTotal = 0, childCapped = 0;
+  Object.keys(childGroups).forEach(function (k) {
+    childTotal += childGroups[k];
+    childCapped += Math.min(childGroups[k], CHILD_LIMIT);
+  });
+  var rate = deductionRatePct();
+  var refund = Math.round((socialCap + expensive + childCapped) * rate / 100);
+  var done = rows.filter(function (e) { return e.deductionDone; }).length;
+  var photos = rows.filter(function (e) { return e.photo; }).length;
+  return {
+    year: String(year), rows: rows, sums: sums,
+    social: social, socialCap: socialCap,
+    expensive: expensive,
+    childTotal: childTotal, childCapped: childCapped,
+    rate: rate, refund: refund, done: done, photos: photos,
+    total: rows.reduce(function (s, e) { return s + e.amount; }, 0),
+  };
+}
+
+/* Годы, в которых есть вычетные траты (для переключателя в списке чеков) */
+function deductionYears() {
+  var ys = {};
+  data.expenses.forEach(function (e) {
+    if (e.deduction && DEDUCTIONS[e.deduction]) ys[String(e.date || '').slice(0, 4)] = 1;
+  });
+  return Object.keys(ys).sort().reverse();
+}
+
+/* =====================================================================
+   ФОТО ЧЕКОВ (IndexedDB, отдельно от localStorage: блобы тяжёлые)
+   ===================================================================== */
+
+var FILES_DB = null;
+
+function filesDB() {
+  if (FILES_DB) return Promise.resolve(FILES_DB);
+  return new Promise(function (resolve, reject) {
+    if (!window.indexedDB) { reject(new Error('no-idb')); return; }
+    var rq = indexedDB.open('budget-files', 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore('receipts', { keyPath: 'id' }); };
+    rq.onsuccess = function () { FILES_DB = rq.result; resolve(FILES_DB); };
+    rq.onerror = function () { reject(rq.error || new Error('idb-error'));
+    };
+  });
+}
+
+function filePut(id, blob) {
+  return filesDB().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('receipts', 'readwrite');
+      tx.objectStore('receipts').put({ id: id, blob: blob, ts: Date.now() });
+      tx.oncomplete = function () { resolve(true); };
+      tx.onerror = function () { reject(tx.error || new Error('put-error'));
+      };
+    });
+  });
+}
+
+function fileGet(id) {
+  return filesDB().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('receipts', 'readonly');
+      var rq = tx.objectStore('receipts').get(id);
+      rq.onsuccess = function () { resolve(rq.result || null); };
+      rq.onerror = function () { reject(rq.error || new Error('get-error'));
+      };
+    });
+  });
+}
+
+function fileDel(id) {
+  return filesDB().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction('receipts', 'readwrite');
+      tx.objectStore('receipts')['delete'](id);
+      tx.oncomplete = function () { resolve(true); };
+      tx.onerror = function () { reject(tx.error || new Error('del-error'));
+      };
+    });
+  });
+}
+
+/* Сжатие снимка чека: не больше ~1280 px по длинной стороне, JPEG.
+     Маленькие файлы (до 400 КБ и до 1,2 Мп) оставляем как есть. */
+function shrinkReceiptImage(blob) {
+  return new Promise(function (resolve) {
+    if (blob.size <= 400 * 1024 && blob.type !== 'image/png') { resolve(blob); return; }
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if (!w || !h) { resolve(blob); return; }
+      if (w * h <= 1200000 && blob.size <= 400 * 1024) { resolve(blob); return; }
+      var k = Math.min(1, 1280 / Math.max(w, h));
+      var cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+      var cv = document.createElement('canvas');
+      cv.width = cw; cv.height = ch;
+      cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+      if (cv.toBlob) {
+        cv.toBlob(function (b) { resolve(b || blob); }, 'image/jpeg', 0.85);
+      } else {
+        resolve(blob);
+      }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(blob); };
+    img.src = url;
+  });
 }
 
 /* ---------- Форматирование (формат.ts) ---------- */
@@ -1014,6 +1287,63 @@ function memberName(data, id) {
   return undefined;
 }
 
+/* ---------- Доход по участникам (v1.8) ---------- */
+
+function memberIncomeMap() {
+  return (data.memberIncome && typeof data.memberIncome === 'object' && !Array.isArray(data.memberIncome)) ? data.memberIncome : {};
+}
+
+function memberIncomeOf(id) {
+  var v = memberIncomeMap()[id];
+  return (isFiniteNum(v) && v > 0) ? v : 0;
+}
+
+function incomeCommonVal() {
+  return (isFiniteNum(data.incomeCommon) && data.incomeCommon > 0) ? data.incomeCommon : 0;
+}
+
+/* Разложение дохода: по участникам + строка «Прочее / общий» */
+function incomeParts() {
+  var parts = [];
+  data.members.forEach(function (m) {
+    var v = memberIncomeOf(m.id);
+    if (v > 0) parts.push({ id: m.id, name: m.name, amount: v });
+  });
+  var c = incomeCommonVal();
+  if (c > 0) parts.push({ id: null, name: 'Прочее / общий', amount: c });
+  return parts;
+}
+
+/* Итоговый доход семьи = сумма участников + прочее (data.income пересчитываем) */
+function recomputeIncome() {
+  var s = 0;
+  incomeParts().forEach(function (p) { s += p.amount; });
+  data.income = Math.round(s);
+}
+
+/* Оценка годового уплаченного НДФЛ по доходу участников (для проверки
+   вычетов). Несовершеннолетних не считаем: пособия НДФЛ не облагаются. */
+function ndflCapacity() {
+  var rate = deductionRatePct();
+  var out = [];
+  data.members.forEach(function (m) {
+    var v = memberIncomeOf(m.id);
+    var age = memberAge(m);
+    if (v > 0 && age !== null && age < 18) return;
+    if (v > 0) out.push({ name: m.name, ndfl: Math.round(v * 12 * rate / 100) });
+  });
+  return out;
+}
+
+/* Строка «Доход по участникам» для запроса ИИ */
+function incomeByMembersLine() {
+  var parts = incomeParts().filter(function (p) { return p.id !== null; });
+  if (!parts.length) return '';
+  return '• Доход по участникам: ' + parts.map(function (p) {
+    return p.name + ' — ' + money(p.amount) + '/мес';
+  }).join(', ');
+}
+
 /* ---------- Экспортёры (exporters.ts) ---------- */
 
 function csvCell(v) {
@@ -1098,12 +1428,16 @@ function buildAiSummary(data, period) {
     lines.push('СЕМЬЯ И ДОХОД:');
     lines.push('• Состав и возраст не указаны — считай по федеральным нормам, суммы помечай «оценка»');
     lines.push('• Доход семьи: ' + (income > 0 ? money(income) + '/мес' : 'не указан'));
+    var incLine2 = incomeByMembersLine();
+    if (incLine2) lines.push(incLine2);
     if (HOUSING_LABELS[data.housing]) lines.push('• Жильё: ' + HOUSING_LABELS[data.housing]);
     if (CARS_LABELS[data.cars]) lines.push('• Автомобиль: ' + CARS_LABELS[data.cars]);
     if (EMPLOYMENT_LABELS[data.employment]) lines.push('• Работа взрослых: ' + EMPLOYMENT_LABELS[data.employment]);
     if (data.familyNotes) lines.push('• О семье: ' + data.familyNotes);
     lines.push('');
   }
+  var dedLines = deductionSummaryLines();
+  dedLines.forEach(function (s) { lines.push(s); });
 
   if (period === 'all') {
     var monthsSet = {};
@@ -1209,6 +1543,7 @@ function buildAiSummary(data, period) {
   lines.push('4. «Скидки по картам и акциям» — коммерческие скидки для наших категорий (смотри состав семьи выше): аптеки, продукты, одежда, транспорт, связь, развлечения.');
   lines.push('5. «Где сэкономить по тратам» — по каждой категории из сводки: как сократить расходы без потери качества, оценка экономии ₽/мес.');
   lines.push('6. «План действий» — таблица «действие → эффект ₽/год → срок» по убыванию выгоды; отметь, что можно сделать за 1 день, за неделю, за месяц.');
+  lines.push('Отдельно оцени налоговые вычеты по нашим чекам (лечение, обучение, фитнес — см. блок «НАЛОГОВЫЕ ВЫЧЕТЫ ПО ЧЕКАМ»): сколько сможем вернуть ₽, какие документы собрать и действует ли для наших организаций упрощённый порядок без декларации.');
   lines.push('В конце: итоговая сумма возможной выгоды ₽/год и топ-3 действия, с которых начать прямо сегодня.');
   lines.push('');
   lines.push('Сгенерировано ' + todayISO() + ' в приложении «Семейный бюджет»');
@@ -1603,7 +1938,7 @@ function onScanFile(ev) {
       ctx.drawImage(img, 0, 0, w, h);
       var id = ctx.getImageData(0, 0, w, h);
       var code = jsQR(id.data, w, h, { inversionAttempts: 'attemptBoth' });
-      if (code && code.data) { found = true; handleScanned(code.data); }
+      if (code && code.data) { found = true; keepReceiptPhoto(file); handleScanned(code.data); }
     }
     if (!found && scan.active) {
       scan.msgLock = false;
@@ -1616,6 +1951,30 @@ function onScanFile(ev) {
     if (scan.active) msg.textContent = 'Не удалось открыть снимок';
   };
   img.src = url;
+}
+
+/* Фото чека: снимок из галереи/камеры или стоп-кадр живого скана.
+   Сохраняем сжатую копию — она поедет в запись траты и на Диск. */
+function keepReceiptPhoto(blob) {
+  if (!data.saveReceiptPhotos) return;
+  shrinkReceiptImage(blob).then(function (b) {
+    qa.photoBlob = b || null;
+    renderQuickAddState();
+  }).catch(function () { /* без фото — не страшно */ });
+}
+
+/* Стоп-кадр с камеры в полном разрешении — при живом скане это
+   и есть «фото чека», отдельный снимок не нужен */
+function captureVideoFrame(video) {
+  try {
+    var cv = document.createElement('canvas');
+    cv.width = video.videoWidth; cv.height = video.videoHeight;
+    cv.getContext('2d').drawImage(video, 0, 0);
+    return new Promise(function (resolve) {
+      if (cv.toBlob) cv.toBlob(function (b) { resolve(b); }, 'image/jpeg', 0.87);
+      else resolve(null);
+    });
+  } catch (e) { return Promise.resolve(null); }
 }
 
 function handleScanned(text) {
@@ -1636,10 +1995,22 @@ function handleScanned(text) {
       }
     }
   }
-  closeScanner();
-  buzz(35);
-  beepOk();
-  applyReceipt(r);
+  // Живой скан: сохраняем стоп-кадр как фото чека (для вычетов)
+  var video = $('#scanVideo');
+  var finalize = function () {
+    closeScanner();
+    buzz(35);
+    beepOk();
+    applyReceipt(r);
+  };
+  if (data.saveReceiptPhotos && video && video.videoWidth && !qa.photoBlob) {
+    captureVideoFrame(video).then(function (b) {
+      if (b) qa.photoBlob = b;
+      finalize();
+    });
+  } else {
+    finalize();
+  }
 }
 
 function applyReceipt(r) {
@@ -1661,7 +2032,8 @@ function applyReceipt(r) {
    ВКЛАДКА «ДОБАВИТЬ»
    ===================================================================== */
 
-var qa = { mode: 'once', recurrence: 'monthly', categoryId: null, detailsOpen: false, scanFiscal: null };
+var qa = { mode: 'once', recurrence: 'monthly', categoryId: null, detailsOpen: false, scanFiscal: null, ded: false, dedType: '', photoBlob: null };
+var qaPhotoUrl = null;
 
 function qaVisibleCats() { return data.categories.filter(function (c) { return !c.hidden; }); }
 
@@ -1701,6 +2073,36 @@ function renderQuickAddState() {
     }).join('');
     sel.value = cur && data.members.some(function (m) { return m.id === cur; }) ? cur : 'none';
   }
+
+  // Налоговый вычет: переключатель, тип и подсказка
+  var dedSw = $('#qaDedSw');
+  if (dedSw) {
+    dedSw.classList.toggle('on', qa.ded);
+    $('#qaDedExtra').hidden = !qa.ded;
+    var dsel = $('#qaDedType');
+    dsel.innerHTML = Object.keys(DEDUCTIONS).map(function (k) {
+      return '<option value="' + k + '">' + esc(DEDUCTIONS[k].name) + '</option>';
+    }).join('');
+    if (qa.dedType && DEDUCTIONS[qa.dedType]) dsel.value = qa.dedType;
+    else { qa.dedType = dsel.value; }
+    var dd = DEDUCTIONS[qa.dedType] || DEDUCTIONS.med;
+    var limTxt = dd.limit
+      ? 'лимит ' + money(dd.limit) + '/год' + (dd.group === 'social' ? ' (общий для лечения, фитнеса и своего обучения)' : ' на ребёнка')
+      : 'без лимита';
+    $('#qaDedHint').textContent = 'Вернётся ' + deductionRatePct() + '% НДФЛ · ' + limTxt + '. Нужны: ' + dd.docs + '.';
+  }
+
+  // Фото чека: превью прикреплённого снимка
+  if (qaPhotoUrl) { try { URL.revokeObjectURL(qaPhotoUrl); } catch (e) { /* ignore */ } qaPhotoUrl = null; }
+  var pimg = $('#qaPhotoImg'), pdel = $('#qaPhotoDel'), pbtn = $('#qaPhotoBtn');
+  if (qa.photoBlob) {
+    qaPhotoUrl = URL.createObjectURL(qa.photoBlob);
+    pimg.src = qaPhotoUrl; pimg.hidden = false; pdel.hidden = false;
+    pbtn.textContent = 'Заменить снимок';
+  } else {
+    pimg.hidden = true; pdel.hidden = true;
+    pbtn.textContent = 'Прикрепить снимок чека';
+  }
 }
 
 function qaSaveAction() {
@@ -1719,13 +2121,30 @@ function qaSaveAction() {
   var note = $('#qaNote').value.trim() || undefined;
 
   if (qa.mode === 'once') {
+    var dedType = (qa.ded && qa.dedType && DEDUCTIONS[qa.dedType]) ? qa.dedType : undefined;
     data.expenses.unshift({
       id: uid(), amount: n, categoryId: qa.categoryId, note: note,
       date: date, memberId: memberId, createdAt: nowISO(),
       fiscal: qa.scanFiscal || undefined,
+      deduction: dedType,
     });
     persist();
-    toast('Трата добавлена', money(n) + ' — ' + catName);
+    var saved = data.expenses[0];
+    if (qa.photoBlob) {
+      (function (blob) {
+        filePut(saved.id, blob).then(function () {
+          saved.photo = true;
+          persist();
+        }, function () {
+          toast('Фото чека не сохранилось', 'Не хватает памяти устройства — чек сохранён без снимка');
+        });
+      })(qa.photoBlob);
+    }
+    toast('Трата добавлена', money(n) + ' — ' + catName + (dedType ? ' · вычет ' + DEDUCTIONS[dedType].short : ''));
+    // Автозаливка на Яндекс Диск после вычетного чека
+    if (dedType && data.disk && data.disk.token && data.disk.auto) {
+      setTimeout(function () { diskSync(true); }, 600);
+    }
   } else {
     data.regulars.unshift({
       id: uid(), amount: n, categoryId: qa.categoryId, note: note,
@@ -1737,6 +2156,9 @@ function qaSaveAction() {
   }
   // Готовим форму к следующему вводу: сумма пустая, категория сохранена
   qa.scanFiscal = null;
+  qa.photoBlob = null;
+  qa.ded = false;
+  qa.dedType = '';
   $('#qaAmount').value = '';
   $('#qaNote').value = '';
   renderQuickAddState();
@@ -1760,8 +2182,42 @@ function initQuickAdd() {
     var b = ev.target.closest ? ev.target.closest('.chip') : null;
     if (!b) return;
     qa.categoryId = b.getAttribute('data-id');
+    // Категория с вычетом (например, «Здоровье») — включаем вычет сразу
+    var cat = categoryById(data, qa.categoryId);
+    if (cat && cat.deduction && DEDUCTIONS[cat.deduction]) {
+      qa.ded = true;
+      qa.dedType = cat.deduction;
+    } else if (qa.ded) {
+      qa.ded = false;
+      qa.dedType = '';
+    }
     renderQuickAddState();
     $('#qaAmount').focus();
+  });
+
+  $('#qaDedSw').addEventListener('click', function () {
+    qa.ded = !qa.ded;
+    if (qa.ded && !qa.dedType) {
+      var cat = qa.categoryId ? categoryById(data, qa.categoryId) : null;
+      qa.dedType = (cat && cat.deduction && DEDUCTIONS[cat.deduction]) ? cat.deduction : 'med';
+    }
+    renderQuickAddState();
+  });
+  $('#qaDedType').addEventListener('change', function () {
+    qa.dedType = $('#qaDedType').value;
+    renderQuickAddState();
+  });
+
+  $('#qaPhotoBtn').addEventListener('click', function () { $('#qaPhotoFile').click(); });
+  $('#qaPhotoDel').addEventListener('click', function () {
+    qa.photoBlob = null;
+    renderQuickAddState();
+  });
+  $('#qaPhotoFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    keepReceiptPhoto(f);
   });
 
   $('#qaSave').addEventListener('click', qaSaveAction);
@@ -1779,10 +2235,12 @@ function expenseRowHTML(e) {
   var cat = categoryById(data, e.categoryId);
   var catN = cat ? cat.name : 'Без категории';
   var who = memberName(data, e.memberId);
+  var dedBadge = e.deduction && DEDUCTIONS[e.deduction] ? '<span class="dbadge">вычет · ' + esc(DEDUCTIONS[e.deduction].short) + '</span>' : '';
   return '<button type="button" class="row" data-exp="' + esc(e.id) + '">' +
     bubbleIcon(cat) +
-    '<span class="mid"><span class="rname">' + esc(catN) + '</span>' +
-    '<span class="rsub">' + esc(e.note || '\u00A0') + (who ? ' · ' + esc(who) : '') + '</span></span>' +
+    '<span class="mid"><span class="rname" style="display:flex;align-items:center;gap:6px">' +
+    '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(catN) + '</span>' + dedBadge + '</span>' +
+    '<span class="rsub">' + esc(e.note || '\u00A0') + (who ? ' · ' + esc(who) : '') + (e.photo ? ' · 📷' : '') + '</span></span>' +
     '<span class="ramt">' + money(e.amount) + '</span></button>';
 }
 
@@ -1843,7 +2301,7 @@ function renderJournal() {
 function numVal(n) { return String(n).replace('.', ','); }
 
 function openExpenseDialog(e) {
-  var d = { catId: e.categoryId };
+  var d = { catId: e.categoryId, ded: !!e.deduction, dedType: e.deduction || 'med', photo: null };
   var multi = data.members.length > 1;
   var memSel = '';
   if (multi) {
@@ -1860,10 +2318,83 @@ function openExpenseDialog(e) {
     '<div class="fld"><label>Категория</label><div class="chips" id="eChips"></div></div>' +
     '<div class="two"><div class="fld"><label>Дата</label><input class="inp" type="date" id="eDate" value="' + esc(e.date) + '"></div>' + memSel + '</div>' +
     '<div class="fld"><label>Комментарий</label><input class="inp" id="eNote" maxlength="80" value="' + esc(e.note || '') + '"></div>' +
+    '<div class="dedline"><button type="button" class="sw" id="eDedSw"></button>' +
+    '<span class="dt">Налоговый вычет<span class="ds">Лечение, обучение, фитнес — вернётся до ' + deductionRatePct() + '% НДФЛ</span></span></div>' +
+    '<div id="eDedExtra" hidden><div class="fld" style="margin-bottom:0"><label>Что это за трата</label><select class="inp" id="eDedType"></select></div>' +
+    '<p class="hint" id="eDedHint" style="text-align:left;margin:8px 0 0"></p></div>' +
+    '<div class="swrow" id="eDoneRow" hidden><div><div class="t">Подтверждение собрано</div><div class="s">Чек, договор и справка на месте — можно подавать на вычет</div></div>' +
+    '<button type="button" class="sw" id="eDone"></button></div>' +
+    '<div class="fld" style="margin:14px 0 0"><label>Фото чека</label><div class="photoline">' +
+    '<img class="dthumb" id="ePhotoImg" alt="Фото чека" hidden>' +
+    '<button type="button" class="btn" id="ePhotoBtn">Прикрепить снимок</button>' +
+    '<button type="button" class="iconbtn" id="ePhotoDel" aria-label="Удалить фото" hidden>' + TRASH + '</button>' +
+    '<input type="file" id="ePhotoFile" accept="image/*" hidden></div>' +
+    '<p class="hint" id="ePhotoHint" style="text-align:left;margin:8px 0 0"></p></div>' +
     '<div class="dbtns"><button type="button" class="btn" id="eDel" style="color:var(--destructive)">Удалить</button>' +
     '<button type="button" class="btn pri" id="eSave">Сохранить</button></div>'
   );
   renderEditChips(d);
+
+  var ePhotoUrl = null;
+  function syncDed() {
+    $('#eDedSw').classList.toggle('on', d.ded);
+    $('#eDedExtra').hidden = !d.ded;
+    $('#eDoneRow').hidden = !d.ded;
+    var dsel = $('#eDedType');
+    dsel.innerHTML = Object.keys(DEDUCTIONS).map(function (k) {
+      return '<option value="' + k + '">' + esc(DEDUCTIONS[k].name) + '</option>';
+    }).join('');
+    if (DEDUCTIONS[d.dedType]) dsel.value = d.dedType;
+    var dd = DEDUCTIONS[dsel.value] || DEDUCTIONS.med;
+    $('#eDedHint').textContent = 'Нужны: ' + dd.docs + '.';
+    $('#eDone').classList.toggle('on', !!e.deductionDone);
+  }
+  syncDed();
+  $('#eDedSw').addEventListener('click', function () { d.ded = !d.ded; syncDed(); });
+  $('#eDedType').addEventListener('change', function () { d.dedType = $('#eDedType').value; syncDed(); });
+  $('#eDone').addEventListener('click', function () {
+    e.deductionDone = !e.deductionDone;
+    $('#eDone').classList.toggle('on', !!e.deductionDone);
+  });
+
+  function syncPhoto() {
+    var img = $('#ePhotoImg'), del = $('#ePhotoDel'), hint = $('#ePhotoHint');
+    if (ePhotoUrl) { try { URL.revokeObjectURL(ePhotoUrl); } catch (er) { /* ignore */ } ePhotoUrl = null; }
+    if (d.photo) {
+      ePhotoUrl = URL.createObjectURL(d.photo);
+      img.src = ePhotoUrl; img.hidden = false; del.hidden = false;
+      hint.textContent = 'Нажмите на фото, чтобы рассмотреть.';
+      $('#ePhotoBtn').textContent = 'Заменить';
+    } else {
+      img.hidden = true; del.hidden = true;
+      hint.textContent = '';
+      $('#ePhotoBtn').textContent = 'Прикрепить снимок';
+    }
+  }
+  if (e.photo) {
+    fileGet(e.id).then(function (rec) {
+      if (rec && rec.blob) { d.photo = rec.blob; syncPhoto(); }
+    }).catch(function () { /* нет фото — не страшно */ });
+  }
+  $('#ePhotoBtn').addEventListener('click', function () { $('#ePhotoFile').click(); });
+  $('#ePhotoDel').addEventListener('click', function () {
+    confirmDialog('Удалить фото чека?', 'Снимок исчезнет из приложения. Данные траты останутся.', 'Удалить', function () {
+      d.photo = null; d.photoRemoved = true;
+      syncPhoto();
+    });
+  });
+  $('#ePhotoFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    shrinkReceiptImage(f).then(function (b) { d.photo = b; d.photoRemoved = false; syncPhoto(); });
+  });
+  $('#ePhotoImg').addEventListener('click', function () {
+    if (!d.photo) return;
+    var u = URL.createObjectURL(d.photo);
+    openModal('<div class="dhead"><b>Фото чека</b><button type="button" class="iconbtn" data-mclose>' + XICON + '</button></div>' +
+      '<img class="dbig" src="' + u + '" alt="Фото чека"><p class="dtxt" style="margin-top:10px">' + esc(e.note || '') + ' · ' + money(e.amount) + '</p>');
+  });
 
   $('#eAm').focus();
   $('#eSave').addEventListener('click', function () {
@@ -1875,18 +2406,30 @@ function openExpenseDialog(e) {
     e.date = $('#eDate').value || todayISO();
     e.note = $('#eNote').value.trim() || undefined;
     e.memberId = (multi && $('#eMem').value !== 'none') ? $('#eMem').value : undefined;
+    e.deduction = d.ded ? d.dedType : undefined;
+    if (!d.ded) e.deductionDone = undefined;
     persist();
+    if (d.photoRemoved) {
+      fileDel(e.id).then(function () { e.photo = undefined; persist(); }, function () { /* ignore */ });
+      e.photo = undefined;
+    } else if (d.photo) {
+      filePut(e.id, d.photo).then(function () { e.photo = true; persist(); }, function () { /* ignore */ });
+      e.photo = true;
+    }
     closeModal();
     toast('Сохранено', money(n));
     renderJournal();
+    if (curTab === 'analytics') renderAnalytics();
   });
   $('#eDel').addEventListener('click', function () {
     confirmDialog('Удалить трату?', 'Запись исчезнет из журнала и аналитики. Действие нельзя отменить.', 'Удалить',
       function () {
         data.expenses = data.expenses.filter(function (x) { return x.id !== e.id; });
         persist();
+        fileDel(e.id).catch(function () { /* ignore */ });
         toast('Трата удалена', '');
         renderJournal();
+        if (curTab === 'analytics') renderAnalytics();
       },
       function () { openExpenseDialog(e); });
   });
@@ -2024,7 +2567,9 @@ function renderAnalytics() {
   }
   h += '<div class="an2"><div><div class="k">Разовые траты</div><div class="v">' + money(stats.onceTotal) + '</div></div>' +
     '<div><div class="k">Регулярные /мес</div><div class="v">' + money(stats.regularTotal) + '</div></div></div></div>';
+  h += renderIncomeCard();
   h += renderBenefitsCard();
+  h += renderDeductionCard();
 
   if (!hasAnything) {
     h += emptyHTML('pie', 'За этот месяц данных нет', 'Добавьте траты и регулярные платежи — аналитика построится автоматически.');
@@ -2085,7 +2630,13 @@ function initAnalytics() {
   $('#anNext').addEventListener('click', function () { anMonth = shiftMonth(anMonth, 1); renderAnalytics(); });
   $('#anBody').addEventListener('click', function (ev) {
     if (ev.target.closest('#anBenefitsGo')) { switchTab('settings'); return; }
-    if (ev.target.closest('#anBenefitsOpen')) { openBenefits(); }
+    if (ev.target.closest('#anBenefitsOpen')) { openBenefits(); return; }
+    if (ev.target.closest('#anDedOpen')) { openDeductions(anMonth.slice(0, 4)); return; }
+    if (ev.target.closest('#anDedGo')) { switchTab('add'); return; }
+    if (ev.target.closest('#anDedSync')) {
+      if (data.disk && data.disk.token) { runDiskSync(); }
+      else { switchTab('settings'); }
+    }
   });
 }
 
@@ -2295,6 +2846,8 @@ function benefitsSummaryLines() {
   lines.push('• Доход семьи: ' + (data.income > 0
     ? money(data.income) + '/мес' + (f.perHead ? ' (≈ ' + money(f.perHead) + ' на человека)' : '')
     : 'не указан'));
+  var incLine = incomeByMembersLine();
+  if (incLine) lines.push(incLine);
   if (HOUSING_LABELS[data.housing]) lines.push('• Жильё: ' + HOUSING_LABELS[data.housing]);
   if (CARS_LABELS[data.cars]) lines.push('• Автомобиль: ' + CARS_LABELS[data.cars]);
   if (EMPLOYMENT_LABELS[data.employment]) lines.push('• Работа взрослых: ' + EMPLOYMENT_LABELS[data.employment]);
@@ -2313,6 +2866,30 @@ function benefitsSummaryLines() {
   if (maybe.length) {
     lines.push('• Проверить (зависит от условий): ' + maybe.map(function (x) { return x.b.title; }).join('; ') + '.');
   }
+  lines.push('');
+  return lines;
+}
+
+/* Блок «НАЛОГОВЫЕ ВЫЧЕТЫ ПО ЧЕКАМ» для готового запроса ИИ */
+function deductionSummaryLines() {
+  var years = deductionYears();
+  if (!years.length) return [];
+  var lines = [];
+  var y = years[0];
+  var dd = calcDeductions(y);
+  lines.push('НАЛОГОВЫЕ ВЫЧЕТЫ ПО ЧЕКАМ (' + y + '):');
+  Object.keys(dd.sums).forEach(function (k) {
+    lines.push('• ' + DEDUCTIONS[k].name + ': ' + money(dd.sums[k]));
+  });
+  lines.push('• Оценка возврата по этим чекам: ' + money(dd.refund) + ' (' + dd.rate + '% НДФЛ)');
+  var cap = ndflCapacity();
+  if (cap.length && dd.refund > 0) {
+    lines.push('• Уплаченный НДФЛ за год (оценка по доходам участников): ' +
+      cap.map(function (c) { return c.name + ' ≈ ' + money(c.ndfl); }).join(', ') +
+      '. Возврат ограничен налогом того, кто подаёт декларацию; чеки можно разделить между работающими.');
+  }
+  lines.push('• Лимиты: обычные социальные вычеты — 150 000 ₽/год; обучение детей — 110 000 ₽/год на каждого ребёнка; дорогостоящее лечение — без лимита. Вычет можно вернуть за 3 последних года.');
+  lines.push('• Чеки сохранены с фискальными данными (ФН/ФД/ФП)' + (data.disk && data.disk.token ? ', фото выгружаются на Яндекс Диск' : ''));
   lines.push('');
   return lines;
 }
@@ -2337,6 +2914,24 @@ function updateFamilyInfo() {
   s += '.<br>Положено льгот по возрастам: <b>' + total + '</b> — список в «Аналитике».';
   el.hidden = false;
   el.innerHTML = s;
+}
+
+/* Карточка «Доходы семьи» — вклад каждого участника (v1.8).
+   Показываем, только когда есть хотя бы два источника: иначе делить нечего. */
+function renderIncomeCard() {
+  var parts = incomeParts();
+  if (parts.length < 2 || !(data.income > 0)) return '';
+  var max = 0;
+  parts.forEach(function (p) { if (p.amount > max) max = p.amount; });
+  var h = '<p class="lbl">Доходы семьи</p><div class="card catsbox">';
+  parts.forEach(function (p, i) {
+    var share = Math.round(p.amount / data.income * 100);
+    h += '<div class="cbar"><div class="t"><b>' + esc(p.name) + '</b>' +
+      '<span class="num">' + money(p.amount) + '/мес <span class="sh">' + share + '%</span></span></div>' +
+      '<div class="ctrack"><i style="width:' + (p.amount / max * 100).toFixed(1) + '%;background:' + PALETTE[i % PALETTE.length] + '"></i></div></div>';
+  });
+  h += '</div>';
+  return h;
 }
 
 /* Карточка «Льготы и экономия» на вкладке «Аналитика» */
@@ -2422,6 +3017,167 @@ function openBenefits() {
   });
 }
 
+/* Карточка «Налоговые вычеты» на вкладке «Аналитика»: накоплено
+   за год, оценка возврата и кнопка «Чеки для вычета» */
+function renderDeductionCard() {
+  var year = anMonth.slice(0, 4);
+  var dd = calcDeductions(year);
+  var parts = [];
+  Object.keys(dd.sums).forEach(function (k) {
+    parts.push(DEDUCTIONS[k].short + ' ' + money(dd.sums[k]));
+  });
+  if (!dd.rows.length) {
+    return '<div class="card anb" id="anDed">' +
+      '<div class="top"><span class="k">Налоговые вычеты ' + year + '</span><span class="v">—</span></div>' +
+      '<p class="hint" style="text-align:left;margin:2px 0 10px">Оплата лечения, обучения или спортзала? Отметьте такие траты флажком «Налоговый вычет» — приложение посчитает возврат НДФЛ и сохранит чеки для налоговой.</p>' +
+      '<button type="button" class="btn" id="anDedGo">Как это работает</button></div>';
+  }
+  var refund = 'до ' + money(dd.refund) + '/год';
+  return '<div class="card anb" id="anDed">' +
+    '<div class="top"><span class="k">Налоговые вычеты ' + year + '</span><span class="v">' + refund + '</span></div>' +
+    '<p class="hint" style="text-align:left;margin:2px 0 10px">' + dd.rows.length + ' ' + pluralRu(dd.rows.length, 'чек', 'чека', 'чеков') + ' на ' + money(dd.total) + ' · возврат ' + dd.rate + '% НДФЛ · ' + parts.join(' · ') + '</p>' +
+    '<div class="dlim"><div class="t"><span>Обычные соц. вычеты (лечение, фитнес, обучение своё)</span><b>' + money(dd.social) + ' / 150 000 ₽</b></div>' +
+    '<div class="prog"><i style="width:' + Math.min(100, dd.social / 150000 * 100).toFixed(1) + '%"></i></div></div>' +
+    (dd.childTotal ? '<div class="dlim"><div class="t"><span>Обучение детей (лимит на каждого ребёнка)</span><b>' + money(dd.childTotal) + ' / 110 000 ₽</b></div>' +
+      '<div class="prog"><i style="width:' + Math.min(100, dd.childTotal / 110000 * 100).toFixed(1) + '%"></i></div></div>' : '') +
+    (dd.expensive ? '<div class="dlim"><div class="t"><span>Дорогостоящее лечение — без лимита</span><b>' + money(dd.expensive) + '</b></div></div>' : '') +
+    '<div class="b2" style="margin-top:12px">' +
+    '<button type="button" class="btn pri" id="anDedOpen">Чеки для вычета</button>' +
+    (data.disk && data.disk.token
+      ? '<button type="button" class="btn" id="anDedSync">На Диск</button>'
+      : '<button type="button" class="btn" id="anDedSync">Диск: выкл.</button>') +
+    '</div></div>';
+}
+
+/* Полный список вычетных чеков за год с фискальными данными */
+function openDeductions(year) {
+  var years = deductionYears();
+  if (!years.length || years.indexOf(String(year)) < 0) {
+    years.unshift(String(year));
+  }
+  var cur = String(year);
+  if (years.indexOf(cur) < 0) cur = years[0];
+  var dd = calcDeductions(cur);
+
+  var h = '<div class="dhead"><b>Чеки для налогового вычета</b><button type="button" class="iconbtn" data-mclose>' + XICON + '</button></div>';
+  if (years.length > 1) {
+    h += '<div class="dyears">' + years.map(function (y) {
+      return '<button type="button" class="dy' + (y === cur ? ' on' : '') + '" data-dyear="' + y + '">' + y + '</button>';
+    }).join('') + '</div>';
+  }
+
+  h += '<p class="dtxt">Год ' + cur + ': ' + dd.rows.length + ' ' + pluralRu(dd.rows.length, 'чек', 'чека', 'чеков') + ' на ' + money(dd.total) +
+    ' — возврат до <b>' + money(dd.refund) + '</b> (' + dd.rate + '% НДФЛ).</p>';
+
+  /* Проверка: возврат не может превышать НДФЛ, уплаченный тем, кто подаёт декларацию */
+  var cap = ndflCapacity();
+  if (cap.length && dd.refund > 0) {
+    h += '<p class="dtxt">Уплаченный НДФЛ за год — оценка по доходам из настроек (если зарплаты официальные): ' +
+      cap.map(function (c) { return c.name + ' ≈ ' + money(c.ndfl); }).join(', ') + '.</p>';
+    var maxNdfl = 0;
+    cap.forEach(function (c) { if (c.ndfl > maxNdfl) maxNdfl = c.ndfl; });
+    if (dd.refund > maxNdfl) {
+      h += '<div class="amber">Возврат ' + money(dd.refund) + ' больше НДФЛ, который по нашей оценке уплатил один человек (' + money(maxNdfl) + '). ' +
+        (cap.length > 1
+          ? 'Чеки можно разделить между работающими: каждый заявляет вычеты в своей декларации — лимиты у каждого свои.'
+          : 'Вернуть больше уплаченного налога нельзя — проверьте доход и ставку НДФЛ в настройках.') + '</div>';
+    }
+  }
+
+  var rowsHtml = dd.rows.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).map(function (e) {
+    var dd0 = DEDUCTIONS[e.deduction];
+    var who = memberName(data, e.memberId);
+    var fiscal = e.fiscal ? e.fiscal.split(':') : null;
+    return '<div class="dedrow">' +
+      (e.photo ? '<img class="dthumb" data-dphoto="' + esc(e.id) + '" alt="Фото чека">' :
+        '<span class="dthumb" style="display:flex;align-items:center;justify-content:center;color:var(--mutfg)">' + iconSVG('tag') + '</span>') +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="display:flex;align-items:center;gap:6px"><span class="dbadge" style="margin:0">' + esc(dd0.short) + '</span>' +
+      '<span style="font-size:11.5px;color:var(--mutfg)">' + dayShort(e.date) + (who ? ' · ' + esc(who) : '') + (e.deductionDone ? ' · готово' : '') + '</span></div>' +
+      '<div style="font-size:13.5px;font-weight:600;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(e.note || categoryName(data, e.categoryId)) + '</div>' +
+      (fiscal ? '<div style="font-size:10.5px;color:var(--mutfg);margin-top:2px">ФД ' + esc(fiscal[1] || '—') + ' · ФП ' + esc(fiscal[2] || '—') + ' · ФН ' + esc(fiscal[0] || '—') + '</div>' : '') +
+      '</div>' +
+      '<div style="text-align:right"><div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums">' + money(e.amount) + '</div>' +
+      '<button type="button" class="iconbtn" data-dedit="' + esc(e.id) + '" aria-label="Изменить" style="width:30px;height:30px">✎</button></div>' +
+      '</div>';
+  }).join('');
+  h += '<div class="card" style="padding:4px 14px;margin:10px 0">' + rowsHtml + '</div>';
+
+  var docsNeeded = {};
+  dd.rows.forEach(function (e) { docsNeeded[e.deduction] = DEDUCTIONS[e.deduction]; });
+  var docsHtml = Object.keys(docsNeeded).map(function (k) { return '• ' + docsNeeded[k].name + ': ' + docsNeeded[k].docs + '.'; }).join('<br>');
+  h += '<div class="deddocs"><b>Что собрать для налоговой:</b><br>' + docsHtml + '<br>• Вычет можно оформить за 3 последних года; для большинства клиник и спортзалов действует упрощённый порядок — без декларации, в личном кабинете налогоплательщика (проверьте, есть ли организация в списке ФНС).</div>';
+
+  h += '<div class="b2" style="margin-top:14px">' +
+    '<button type="button" class="btn" id="dCopy">Скопировать список</button>' +
+    '<button type="button" class="btn" id="dDl">Скачать .txt</button>' +
+    (data.disk && data.disk.token ? '<button type="button" class="btn wide pri" id="dSync">Синхронизировать с Диском</button>' : '') +
+    '</div>';
+
+  var r = openModal(h);
+
+  // миниатюры загружаем из IndexedDB асинхронно
+  $$('.dthumb[data-dphoto]', r).forEach(function (img) {
+    fileGet(img.getAttribute('data-dphoto')).then(function (rec) {
+      if (rec && rec.blob) img.src = URL.createObjectURL(rec.blob);
+    }).catch(function () { /* ignore */ });
+    img.addEventListener('click', function () {
+      fileGet(img.getAttribute('data-dphoto')).then(function (rec) {
+        if (rec && rec.blob) {
+          var u = URL.createObjectURL(rec.blob);
+          openModal('<div class="dhead"><b>Фото чека</b><button type="button" class="iconbtn" data-mclose>' + XICON + '</button></div><img class="dbig" src="' + u + '" alt="Фото чека">');
+        }
+      }).catch(function () { /* ignore */ });
+    });
+  });
+
+  r.addEventListener('click', function (ev) {
+    var yb = ev.target.closest ? ev.target.closest('[data-dyear]') : null;
+    if (yb) { closeModal(); openDeductions(yb.getAttribute('data-dyear')); return; }
+    var eb = ev.target.closest ? ev.target.closest('[data-dedit]') : null;
+    if (eb) {
+      var id = eb.getAttribute('data-dedit');
+      for (var i = 0; i < data.expenses.length; i++) {
+        if (data.expenses[i].id === id) { closeModal(); openExpenseDialog(data.expenses[i]); return; }
+      }
+    }
+  });
+
+  $('#dCopy', r).addEventListener('click', function () {
+    copyText(buildDeductionList(cur)).then(function (ok) {
+      toast(ok ? 'Список скопирован' : 'Не удалось скопировать', ok ? 'Вставьте в заметки или письмо' : 'Попробуйте скачать .txt');
+    });
+  });
+  $('#dDl', r).addEventListener('click', function () {
+    dl('vychety-' + cur + '.txt', buildDeductionList(cur), 'text/plain;charset=utf-8', 'Список вычетов скачан');
+  });
+  var sb = $('#dSync', r);
+  if (sb) sb.addEventListener('click', function () { closeModal(); runDiskSync(); });
+}
+
+/* Текстовый список вычетных чеков за год — для налоговой */
+function buildDeductionList(year) {
+  var dd = calcDeductions(year);
+  var lines = [];
+  lines.push('Чеки для налогового вычета за ' + year + ' год');
+  lines.push('Сформировано ' + todayISO() + ' в приложении «Семейный бюджет»');
+  lines.push('');
+  lines.push('Итого: ' + dd.rows.length + ' чек. на ' + money(dd.total) + ', возврат до ' + money(dd.refund) + ' (' + dd.rate + '% НДФЛ)');
+  lines.push('Лимиты: обычные социальные вычеты 150 000 ₽/год (лечение, фитнес, своё обучение, ДМС), обучение детей — 110 000 ₽/год на ребёнка, дорогостоящее лечение — без лимита.');
+  if (String(year) < '2025') lines.push('Внимание: для расходов ' + year + ' года действовали лимиты 120 000 ₽ (соц.) и 50 000 ₽ (обучение детей).');
+  lines.push('');
+  dd.rows.slice().sort(function (a, b) { return a.date.localeCompare(b.date); }).forEach(function (e, i) {
+    var who = memberName(data, e.memberId);
+    var fiscal = e.fiscal ? e.fiscal.split(':') : null;
+    lines.push((i + 1) + '. ' + e.date + ' — ' + money(e.amount) + ' — ' + DEDUCTIONS[e.deduction].name +
+      (e.note ? ' — ' + e.note : '') + (who ? ' — ' + who : '') +
+      (fiscal ? ' — чек: ФН ' + fiscal[0] + ', ФД ' + fiscal[1] + ', ФП ' + fiscal[2] : ''));
+  });
+  lines.push('');
+  lines.push('Документы: договор, справка об оплате услуг (медицина/фитнес), рецепт на лекарства, лицензия организации — запросите в клинике/секции.');
+  return lines.join('\n');
+}
+
 /* =====================================================================
    ВКЛАДКА «ВЫГРУЗКА»
    ===================================================================== */
@@ -2443,9 +3199,19 @@ function dl(filename, content, mime, okToast) {
 }
 
 function applyImport(d) {
+  var diskRaw = (d.disk && typeof d.disk === 'object' && !Array.isArray(d.disk)) ? d.disk : {};
+  var disk = defaultDisk();
+  ['clientId', 'clientSecret', 'token', 'login', 'folder', 'lastSync'].forEach(function (k) {
+    if (typeof diskRaw[k] === 'string') disk[k] = diskRaw[k];
+  });
+  if (isFiniteNum(diskRaw.tokenExp)) disk.tokenExp = diskRaw.tokenExp;
+  if (diskRaw.auto === false) disk.auto = false;
+  var inc = sanitizeIncome(d);
   data = {
     version: 1,
-    income: isFiniteNum(d.income) ? d.income : 0,
+    income: inc.total,
+    memberIncome: inc.memberIncome,
+    incomeCommon: inc.incomeCommon,
     region: (typeof d.region === 'string') ? d.region : '',
     housing: (typeof d.housing === 'string') ? d.housing : '',
     cars: (typeof d.cars === 'string') ? d.cars : '',
@@ -2457,6 +3223,9 @@ function applyImport(d) {
     regulars: Array.isArray(d.regulars) ? d.regulars : [],
     claims: (d.claims && typeof d.claims === 'object' && !Array.isArray(d.claims)) ? d.claims : {},
     claimsNotes: typeof d.claimsNotes === 'string' ? d.claimsNotes : '',
+    deductionRate: isFiniteNum(d.deductionRate) ? d.deductionRate : 13,
+    saveReceiptPhotos: d.saveReceiptPhotos !== false,
+    disk: disk,
   };
   persist();
   renderHeader();
@@ -2632,7 +3401,32 @@ var REGIONS = [
 
 var PALETTE = ['#059669', '#0891b2', '#7c3aed', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#14b8a6', '#64748b'];
 
+/* Строки «кто сколько приносит» + итоговая сумма (v1.8) */
+function renderIncomeRows() {
+  var box = $('#setIncRows');
+  if (!box) return;
+  var rows = data.members.map(function (m) {
+    var v = memberIncomeOf(m.id);
+    return '<div class="irow"><span class="ilabel">' + esc(m.name) + '</span>' +
+      '<input class="inp iinc" data-incm="' + esc(m.id) + '" inputmode="decimal" placeholder="0" value="' + (v > 0 ? String(v) : '') + '" aria-label="Доход ' + esc(m.name) + ', ₽ в месяц"></div>';
+  });
+  var c = incomeCommonVal();
+  rows.push('<div class="irow"><span class="ilabel">Прочее / общий</span>' +
+    '<input class="inp iinc" id="setIncCommon" inputmode="decimal" placeholder="0" value="' + (c > 0 ? String(c) : '') + '" aria-label="Прочий общий доход, ₽ в месяц"></div>');
+  box.innerHTML = rows.join('');
+  updateIncomeTotalLine();
+}
+
+function updateIncomeTotalLine() {
+  var el = $('#setIncTotal');
+  if (!el) return;
+  if (!(data.income > 0)) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = 'Итого: <b>' + money(data.income) + '/мес</b> — столько попадает в аналитику, льготы и запрос для ИИ.';
+}
+
 function renderSettings() {
+  renderIncomeRows();
   $('#setMembers').innerHTML = data.members.map(function (m) {
     return '<div class="mrow">' +
       '<input class="inp" data-mname="' + esc(m.id) + '" maxlength="30" placeholder="Имя" value="' + esc(m.name) + '">' +
@@ -2642,8 +3436,12 @@ function renderSettings() {
   updateFamilyInfo();
 
   $('#setCats').innerHTML = data.categories.map(function (c) {
+    var dedOpts = '<option value="">— без вычета —</option>' + Object.keys(DEDUCTIONS).map(function (k) {
+      return '<option value="' + k + '"' + (c.deduction === k ? ' selected' : '') + '>' + esc(DEDUCTIONS[k].name) + '</option>';
+    }).join('');
     return '<div class="crow"><span style="color:' + c.color + ';display:flex">' + iconSVG(c.icon) + '</span>' +
       '<span class="cname">' + esc(c.name) + (c.custom ? '<span class="badge">своя</span>' : '') + '</span>' +
+      '<select class="inp cded" data-dedcat="' + esc(c.id) + '" aria-label="Налоговый вычет для категории ' + esc(c.name) + '">' + dedOpts + '</select>' +
       (c.custom ? '<button type="button" class="iconbtn" data-delcat="' + esc(c.id) + '" aria-label="Удалить категорию ' + esc(c.name) + '">' + TRASH + '</button>' : '') +
       '<button type="button" class="sw' + (c.hidden ? '' : ' on') + '" data-hidecat="' + esc(c.id) + '" aria-label="Категория ' + esc(c.name) + ' видна в списке"></button></div>';
   }).join('');
@@ -2652,7 +3450,6 @@ function renderSettings() {
     ? 'Скрытые категории не показываются при вводе, но старые записи остаются в журнале.'
     : 'Выключите переключатель, чтобы спрятать ненужную категорию из ввода.';
 
-  $('#setIncome').value = data.income > 0 ? String(data.income) : '';
   $('#setRegion').innerHTML = '<option value="">— не выбран —</option>' + REGIONS.map(function (r) {
     return '<option' + (data.region === r ? ' selected' : '') + '>' + esc(r) + '</option>';
   }).join('');
@@ -2661,6 +3458,9 @@ function renderSettings() {
   $('#setCars').value = CARS_LABELS[data.cars] ? data.cars : '';
   $('#setEmployment').value = EMPLOYMENT_LABELS[data.employment] ? data.employment : '';
   $('#setFamilyNotes').value = data.familyNotes || '';
+  $('#setSavePhotos').classList.toggle('on', data.saveReceiptPhotos !== false);
+  $('#setNdfl').value = String(deductionRatePct());
+  renderDiskSettings();
 }
 
 function openCatDialog() {
@@ -2696,12 +3496,25 @@ function openCatDialog() {
 }
 
 function initSettings() {
-  $('#setIncomeOk').addEventListener('click', function () {
-    var n = parseAmount($('#setIncome').value);
-    data.income = n === null ? 0 : n;
+  $('#setIncRows').addEventListener('change', function (ev) {
+    var el = ev.target;
+    if (!el.classList || !el.classList.contains('iinc')) return;
+    var n = parseAmount(el.value);
+    var val = (n === null || n < 0) ? 0 : Math.round(n);
+    if (el.id === 'setIncCommon') {
+      data.incomeCommon = val;
+    } else {
+      var id = el.getAttribute('data-incm');
+      if (!data.memberIncome) data.memberIncome = {};
+      if (val > 0) data.memberIncome[id] = val;
+      else delete data.memberIncome[id];
+    }
+    recomputeIncome();
+    el.value = val > 0 ? String(val) : '';
     persist();
     renderHeader();
-    toast(n ? 'Доход сохранён' : 'Доход очищен', n ? $('#setIncome').value.replace('.', ',') + ' ₽/мес' : '');
+    updateIncomeTotalLine();
+    toast(val > 0 ? 'Доход сохранён' : 'Доход очищен', val > 0 ? el.value.replace('.', ',') + ' ₽/мес' : '');
   });
 
   $('#setRegion').addEventListener('change', function () {
@@ -2755,7 +3568,10 @@ function initSettings() {
     if (!b) return;
     var id = b.getAttribute('data-delmember');
     data.members = data.members.filter(function (m) { return m.id !== id; });
+    if (data.memberIncome) delete data.memberIncome[id];
+    recomputeIncome();
     persist();
+    renderHeader();
     renderSettings();
     renderQuickAddState();
   });
@@ -2774,6 +3590,7 @@ function initSettings() {
       nameEl.value = m.name;
       persist();
       renderQuickAddState();
+      renderIncomeRows();
     } else if (yearEl) {
       var raw = yearEl.value.replace(/\D/g, '');
       yearEl.value = raw;
@@ -2796,6 +3613,34 @@ function initSettings() {
   });
 
   $('#setCatAdd').addEventListener('click', openCatDialog);
+
+  $('#setSavePhotos').addEventListener('click', function () {
+    data.saveReceiptPhotos = data.saveReceiptPhotos === false;
+    persist();
+    $('#setSavePhotos').classList.toggle('on', data.saveReceiptPhotos);
+    toast(data.saveReceiptPhotos ? 'Фото чеков включены' : 'Фото чеков выключены',
+      data.saveReceiptPhotos ? 'Снимок при сканировании сохранится для налоговой' : 'При сканировании сохранятся только дата и сумма');
+  });
+
+  $('#setNdfl').addEventListener('change', function () {
+    data.deductionRate = parseInt($('#setNdfl').value, 10) || 13;
+    persist();
+    toast('Ставка ' + data.deductionRate + '% сохранена', 'Так и посчитаем возврат в аналитике');
+    if (curTab === 'analytics') renderAnalytics();
+  });
+
+  $('#setCats').addEventListener('change', function (ev) {
+    var selEl = ev.target.closest ? ev.target.closest('[data-dedcat]') : null;
+    if (!selEl) return;
+    var id = selEl.getAttribute('data-dedcat');
+    data.categories.forEach(function (c) {
+      if (c.id !== id) return;
+      if (selEl.value && DEDUCTIONS[selEl.value]) c.deduction = selEl.value;
+      else c.deduction = undefined;
+    });
+    persist();
+    toast('Категория обновлена', 'Новые траты в ней будут помечаться вычетом автоматически');
+  });
 
   $('#setCats').addEventListener('click', function (ev) {
     var del = ev.target.closest ? ev.target.closest('[data-delcat]') : null;
@@ -2831,6 +3676,288 @@ function initSettings() {
         toast('Данные удалены', '');
       });
   });
+}
+
+/* =====================================================================
+   ЯНДЕКС ДИСК — облако для чеков и бэкапа.
+   Подключение по OAuth-коду своего приложения (регистрируется
+   бесплатно на oauth.yandex.ru, платформа «Десктопные приложения»).
+   API Диска (cloud-api.yandex.net) и обмен кода (oauth.yandex.ru/token)
+   разрешают запросы прямо из браузера, сервер не нужен. Токен живёт
+   около года; всё происходит только между приложением и Яндексом.
+   ===================================================================== */
+
+var DISK_API = 'https://cloud-api.yandex.net/v1/disk';
+var OAUTH_TOKEN_URL = 'https://oauth.yandex.ru/token';
+
+function diskCfg() {
+  if (!data.disk) data.disk = defaultDisk();
+  return data.disk;
+}
+
+function diskAuthorizeUrl() {
+  return 'https://oauth.yandex.ru/authorize?response_type=code&client_id=' +
+    encodeURIComponent(diskCfg().clientId) +
+    '&scope=' + encodeURIComponent('cloud_api:disk.read cloud_api:disk.write');
+}
+
+function diskApi(path, opts) {
+  var cfg = diskCfg();
+  return fetch(DISK_API + path, Object.assign({}, opts || {}, {
+    headers: Object.assign({ Authorization: 'OAuth ' + cfg.token }, (opts && opts.headers) || {}),
+  })).then(function (res) {
+    if (res.status === 401) { var e = new Error('auth'); e.kind = 'auth'; throw e; }
+    if (res.status === 404) { var e4 = new Error('not-found'); e4.kind = 'not-found'; throw e4; }
+    if (!res.ok) { var e5 = new Error('disk-' + res.status); e5.kind = 'http'; e5.status = res.status; throw e5; }
+    return res;
+  });
+}
+
+/* Проверка токена: заодно узнаём логин и место на Диске */
+function diskTest() {
+  return diskApi('/').then(function (res) { return res.json(); }).then(function (info) {
+    if (info && info.user && info.user.login && diskCfg().login !== info.user.login) {
+      diskCfg().login = info.user.login;
+      persist();
+    }
+    return info;
+  });
+}
+
+function diskMkdir(folder) {
+  return diskApi('/resources/?path=' + encodeURIComponent('disk:/' + folder), { method: 'PUT' })
+    .then(function () { return true; })
+    .catch(function (e) {
+      if (e.kind === 'not-found' || (e.kind === 'http' && e.status === 409)) return true; // уже есть
+      throw e;
+    });
+}
+
+function diskUpload(folder, name, blob) {
+  return diskApi('/resources/upload?overwrite=true&path=' +
+    encodeURIComponent('disk:/' + folder + '/' + name))
+    .then(function (res) { return res.json(); })
+    .then(function (j) {
+      if (!j || !j.href) throw new Error('no-href');
+      return fetch(j.href, { method: 'PUT', body: blob });
+    })
+    .then(function (res) {
+      if (!res.ok) { var e = new Error('upload-' + res.status); e.kind = 'upload'; throw e; }
+      return true;
+    });
+}
+
+/* Полная синхронизация: бэкап + фото несинхронизированных чеков +
+   списки вычетов по годам. Тихий режим — для автозаливки после чека. */
+var diskBusy = false;
+function diskSync(quiet) {
+  var cfg = diskCfg();
+  if (!cfg.token) return Promise.resolve(0);
+  if (diskBusy) return Promise.resolve(0);
+  diskBusy = true;
+  var base = cfg.folder || 'Приложения/Семейный бюджет';
+  var uploaded = 0;
+
+  var work = Promise.resolve()
+    .then(function () { return diskTest(); })
+    .then(function () { return diskMkdir(base); })
+    .then(function () {
+      return diskUpload(base, 'backup.json', new Blob([buildJsonBackup(data)], { type: 'application/json' }));
+    })
+    .then(function () {
+      var pending = data.expenses.filter(function (e) { return e.photo && !e.receiptOnDisk; });
+      var byYear = {};
+      pending.forEach(function (e) { byYear[String(e.date || '').slice(0, 4) || '—'] = 1; });
+      var years = Object.keys(byYear);
+      var chain = Promise.resolve();
+      years.forEach(function (y) {
+        chain = chain.then(function () { return diskMkdir(base + '/Чеки/' + y); });
+      });
+      pending.forEach(function (e) {
+        chain = chain.then(function () {
+          var y = String(e.date || '').slice(0, 4) || '—';
+          var name = 'чек-' + e.date + '_' + String(e.id).slice(-6) + '.jpg';
+          return fileGet(e.id).then(function (rec) {
+            if (!rec || !rec.blob) { e.receiptOnDisk = true; return; }
+            return diskUpload(base + '/Чеки/' + y, name, rec.blob).then(function () {
+              e.receiptOnDisk = true;
+              uploaded++;
+            });
+          });
+        });
+      });
+      return chain;
+    })
+    .then(function () {
+      var years = deductionYears();
+      var chain = Promise.resolve();
+      years.forEach(function (y) {
+        chain = chain.then(function () {
+          return diskUpload(base, 'Вычеты-' + y + '.txt',
+            new Blob([buildDeductionList(y)], { type: 'text/plain' }));
+        });
+      });
+      return chain;
+    })
+    .then(function () {
+      cfg.lastSync = nowISO();
+      persist();
+      return uploaded;
+    });
+
+  return work.then(function (n) {
+    diskBusy = false;
+    if (!quiet) {
+      toast('Диск: синхронизировано', n > 0
+        ? 'Залито чеков: ' + n + ' + бэкап и список вычетов'
+        : 'Бэкап и списки вычетов обновлены, новые фото чеков: 0');
+    }
+    if (curTab === 'settings') renderSettings();
+    return n;
+  }, function (err) {
+    diskBusy = false;
+    if (quiet) { /* тихий режим: промолчим, следующая кнопка расскажет */ }
+    else if (err && err.kind === 'auth') toast('Диск: доступ истёк', 'Получите новый код подтверждения в настройках');
+    else if (err && err.message === 'Failed to fetch') toast('Диск: нет соединения', 'Проверьте интернет и попробуйте снова');
+    else toast('Диск: не получилось', (err && err.message) || 'ошибка сети');
+    return -1;
+  });
+}
+
+function runDiskSync() {
+  toast('Диск: синхронизирую…', '');
+  diskSync(false);
+}
+
+/* Обмен кода подтверждения на токен (прямо из приложения, CORS открыт) */
+function diskConnect(code) {
+  var cfg = diskCfg();
+  var body = 'grant_type=authorization_code&code=' + encodeURIComponent(code || '') +
+    '&client_id=' + encodeURIComponent(cfg.clientId || '');
+  if (cfg.clientSecret) body += '&client_secret=' + encodeURIComponent(cfg.clientSecret);
+  return fetch(OAUTH_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body,
+  }).then(function (res) {
+    return res.json().then(function (j) {
+      if (!res.ok || !j.access_token) {
+        var msg = (j && j.error_description) || (j && j.error) || 'код отклонён';
+        var e = new Error(String(msg)); e.kind = 'oauth';
+        throw e;
+      }
+      return j;
+    });
+  }).then(function (j) {
+    cfg.token = j.access_token;
+    cfg.tokenExp = Date.now() + (j.expires_in ? j.expires_in * 1000 : 31536000000);
+    persist();
+    return diskTest();
+  });
+}
+
+/* ---------- Рендер секции настроек «Яндекс Диск» ---------- */
+
+function renderDiskSettings() {
+  var el = $('#setDiskBody');
+  if (!el) return;
+  var cfg = diskCfg();
+  if (!cfg.token) {
+    el.innerHTML =
+      '<p class="hint" style="text-align:left;margin:0 0 12px">Чеки для налоговых вычетов и полный бэкап будут заливаться в папку «' + esc(cfg.folder) + '» на вашем Диске. Нужен интернет; всё остальное работает офлайн.</p>' +
+      '<div class="fld"><label for="setDiskId">ClientID приложения</label><input class="inp" id="setDiskId" placeholder="например: a1b2c3d4e5f6g7h8i9j0" value="' + esc(cfg.clientId) + '"></div>' +
+      '<div class="fld"><label for="setDiskSecret">ClientSecret (пароль приложения)</label><input class="inp" id="setDiskSecret" placeholder="необязательно для PKCE" value="' + esc(cfg.clientSecret) + '"></div>' +
+      '<button type="button" class="btn" id="setDiskAuthorize" style="width:100%">1. Открыть Яндекс и разрешить доступ</button>' +
+      '<div class="fld" style="margin-top:12px"><label for="setDiskCode">2. Код подтверждения со страницы Яндекса</label>' +
+      '<div class="frow"><input class="inp" id="setDiskCode" placeholder="например: 3413722" autocomplete="off">' +
+      '<button type="button" class="btn pri" id="setDiskConnect" style="padding:0 18px">Подключить</button></div></div>' +
+      '<p class="hint" style="text-align:left;margin:10px 0 0">Код действует 10 минут. Если он не подошёл — откройте Яндекс заново и возьмите свежий.</p>' +
+      '<details style="margin-top:12px"><summary style="font-size:13px;font-weight:700;cursor:pointer;color:var(--primary)">Как за 2–3 минуты получить ClientID и ClientSecret</summary>' +
+      '<div style="font-size:12.5px;color:var(--mutfg);line-height:1.6;margin-top:8px">' +
+      '1. Откройте <b>oauth.yandex.ru</b> и войдите в свой Яндекс-аккаунт.<br>' +
+      '2. Нажмите «Зарегистрировать приложение» (зелёная кнопка справа).<br>' +
+      '3. Название — любое, например «Семейный бюджет».<br>' +
+      '4. Платформа: выберите <b>«Десктопные приложения»</b> — именно она показывает код подтверждения на странице, без сайта-посредника.<br>' +
+      '5. Доступы: раздел «Яндекс Диск» → отметьте <b>«Запись в любом месте на Диске»</b> и «Чтение всего Диска».<br>' +
+      '6. Нажмите «Создать приложение», скопируйте <b>ClientID</b> и <b>ClientSecret</b> сюда.<br>' +
+      '7. Нажмите «Открыть Яндекс…», разрешите доступ, скопируйте код со страницы в поле выше.<br><br>' +
+      'Приложение видно только вам, доступ — только у этого приложения, отключить можно в любой момент на id.yandex.ru → «Входы и устройства».' +
+      '</div></details>';
+    $('#setDiskAuthorize', el).addEventListener('click', function () {
+      saveDiskIds();
+      if (!diskCfg().clientId) { toast('Сначала введите ClientID', 'Он появится после регистрации приложения'); return; }
+      window.open(diskAuthorizeUrl(), '_blank');
+    });
+    $('#setDiskConnect', el).addEventListener('click', function () {
+      saveDiskIds();
+      var code = $('#setDiskCode').value.trim();
+      if (!code) { toast('Вставьте код подтверждения', 'Яндекс покажет его после разрешения доступа'); return; }
+      toast('Подключаю Диск…', '');
+      diskConnect(code).then(function () {
+        toast('Диск подключён', 'Аккаунт: ' + (diskCfg().login || 'ваш Яндекс'));
+        renderSettings();
+        diskSync(false);
+      }, function (err) {
+        toast('Не удалось подключить', err.kind === 'oauth' ? err.message : 'проверьте ClientID, секрет и код');
+      });
+    });
+  } else {
+    var expTxt = '';
+    if (cfg.tokenExp) {
+      var days = Math.round((cfg.tokenExp - Date.now()) / 86400000);
+      expTxt = days > 0 ? 'токен живёт ещё ~' + days + ' ' + pluralRu(days, 'день', 'дня', 'дней') : 'токен истекает — обновите код';
+    }
+    var last = cfg.lastSync ? ' · последняя синхронизация: ' + ruDateShort(cfg.lastSync.slice(0, 10)) : '';
+    el.innerHTML =
+      '<div class="swrow" style="margin-bottom:12px"><div><div class="t">Подключён Яндекс Диск</div>' +
+      '<div class="s">' + esc(cfg.login || 'ваш аккаунт') + (expTxt ? ' · ' + expTxt : '') + last + '</div></div>' +
+      '<span style="color:var(--primary);font-size:22px;font-weight:800">✓</span></div>' +
+      '<div class="swrow" style="margin-bottom:12px"><div><div class="t">Заливать чеки сразу после добавления</div>' +
+      '<div class="s">Вычетный чек с фото уедет на Диск сам (нужен интернет)</div></div>' +
+      '<button type="button" class="sw' + (cfg.auto ? ' on' : '') + '" id="setDiskAuto"></button></div>' +
+      '<div class="b2"><button type="button" class="btn pri" id="setDiskSync">Синхронизировать сейчас</button>' +
+      '<button type="button" class="btn" id="setDiskCheck">Проверить</button></div>' +
+      '<button type="button" class="btn" id="setDiskFolder" style="width:100%;margin-top:8px">Папка: ' + esc(cfg.folder) + '</button>' +
+      '<button type="button" class="btn" id="setDiskOff" style="width:100%;margin-top:8px;color:var(--destructive)">Отключить Диск</button>' +
+      '<p class="hint" style="text-align:left;margin:12px 0 0">На Диске: backup.json, «Вычеты-ГОД.txt» и фото чеков по годам. Токен и секрет хранятся только в этом приложении.</p>';
+    $('#setDiskAuto', el).addEventListener('click', function () {
+      cfg.auto = !cfg.auto;
+      persist();
+      renderDiskSettings();
+    });
+    $('#setDiskSync', el).addEventListener('click', runDiskSync);
+    $('#setDiskCheck', el).addEventListener('click', function () {
+      toast('Проверяю соединение…', '');
+      diskTest().then(function (info) {
+        toast('Диск отвечает', 'Аккаунт: ' + (info && info.user && info.user.login || cfg.login || '—'));
+      }, function (err) {
+        toast(err.kind === 'auth' ? 'Доступ истёк' : 'Диск недоступен', err.kind === 'auth' ? 'Обновите код подтверждения — для этого отключите и подключите заново' : 'Проверьте интернет');
+      });
+    });
+    $('#setDiskFolder', el).addEventListener('click', function () {
+      var v = prompt('Папка на Диске (без «disk:/»):', cfg.folder);
+      if (v === null) return;
+      v = v.trim().replace(/^disk:\/*/, '').replace(/\/+$/, '');
+      cfg.folder = v || 'Приложения/Семейный бюджет';
+      persist();
+      renderDiskSettings();
+    });
+    $('#setDiskOff', el).addEventListener('click', function () {
+      confirmDialog('Отключить Яндекс Диск?', 'Токен доступа будет удалён из приложения. Фото чеков останутся на Диске и в приложении.', 'Отключить', function () {
+        cfg.token = ''; cfg.tokenExp = 0; cfg.login = '';
+        persist();
+        renderSettings();
+        toast('Диск отключён', 'Синхронизация выключена');
+      });
+    });
+  }
+
+  function saveDiskIds() {
+    var idEl = $('#setDiskId'), secEl = $('#setDiskSecret');
+    if (idEl) cfg.clientId = idEl.value.trim();
+    if (secEl) cfg.clientSecret = secEl.value.trim();
+    persist();
+  }
 }
 
 /* =====================================================================
