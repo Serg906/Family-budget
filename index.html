@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#059669">
-<meta name="app-version" content="1.1">
-<meta name="description" content="Быстрый учёт семейных трат: купили — внесли. Категории, регулярные платежи, аналитика и выгрузка сводки для ИИ-ассистента. Работает офлайн.">
+<meta name="app-version" content="1.6">
+<meta name="description" content="Быстрый учёт семейных трат: купили — внесли. Категории, регулярные платежи, аналитика и готовый запрос для ИИ: что семье положено и как сэкономить. Работает офлайн.">
 <title>Семейный бюджет — учёт трат</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#18181b}
 :root{
@@ -77,7 +78,7 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .scanovl .stop .iconbtn:active{background:rgba(255,255,255,.15);color:#fff}
 .scanview{flex:1;position:relative;min-height:0;overflow:hidden;background:#000}
 #scanVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.scanframe{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(70vw,290px);height:min(70vw,290px);border-radius:20px;box-shadow:0 0 0 300vmax rgba(6,6,9,.5);border:2px solid rgba(255,255,255,.5);pointer-events:none}
+.scanframe{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(58vw,250px);height:min(58vw,250px);border-radius:20px;box-shadow:0 0 0 300vmax rgba(6,6,9,.5);border:2px solid rgba(255,255,255,.5);pointer-events:none}
 .scanmsg{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:86%;background:rgba(17,17,20,.85);color:#e4e4e7;font-size:12.5px;line-height:1.55;text-align:center;border-radius:12px;padding:10px 12px;pointer-events:none}
 #scanTorch{position:absolute;top:10px;right:10px;height:38px;background:rgba(17,17,20,.72);color:#fff;border-color:rgba(255,255,255,.25);z-index:2}
 .scanfoot{background:#fff;padding:14px 14px calc(14px + env(safe-area-inset-bottom));flex:none}
@@ -143,8 +144,8 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .row.plain:active{background:none}
 .ibub{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
 .row .mid{flex:1;min-width:0}
-.rname{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rsub{font-size:12px;color:var(--mutfg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rname{display:block;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rsub{display:block;font-size:12px;color:var(--mutfg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ramt{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;text-align:right}
 .rper{display:block;font-size:10px;color:var(--mutfg);font-weight:600}
 .jh{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 8px}
@@ -186,15 +187,30 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 .excard p.desc{font-size:12px;color:var(--mutfg);margin:0 0 10px;line-height:1.5}
 .expre{max-height:260px;overflow:auto;white-space:pre-wrap;background:var(--muted);border-radius:12px;padding:12px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;margin:0}
 .b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.b2 .wide{grid-column:1/-1}
 
 /* ---------- Настройки ---------- */
 .shead{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;font-size:14px;font-weight:700}
 .scard{padding:16px;margin-bottom:8px}
-.mchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.mchip{display:inline-flex;height:34px;align-items:center;gap:2px;background:var(--muted);border-radius:999px;padding:0 6px 0 13px;font-size:13.5px}
-.mchip button{width:26px;height:26px;border-radius:999px;border:0;background:none;color:var(--mutfg);display:flex;align-items:center;justify:center;cursor:pointer}
-.mchip button .ic{width:13px;height:13px}
-.mchip button:active{color:var(--destructive)}
+.mrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mrow .inp{flex:1;min-width:0}
+.mrow .myear{flex:none;width:104px;text-align:center}
+.finfo{font-size:12.5px;color:var(--mutfg);line-height:1.55;margin:12px 0 0}
+.finfo b{color:var(--ink)}
+.anb{padding:16px;margin-bottom:14px}
+.anb .btn{width:100%}
+.brow{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.brow.ok{border-color:rgba(5,150,105,.5);background:rgba(5,150,105,.05)}
+.brow .bt{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brow .bt b{font-size:14px;text-align:left}
+.brow .bd{font-size:12.5px;color:var(--mutfg);line-height:1.55;margin:6px 0 0}
+.brow .ba{font-size:13.5px;font-weight:800;color:var(--primary);margin-top:6px}
+.brow .ba.reg{color:#b45309}
+.bdot{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--mutfg);background:var(--muted);border-radius:6px;padding:3px 8px;flex:none}
+.brow.ok .bdot{color:#059669;background:rgba(5,150,105,.12)}
+.bclaim{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;border-top:1px dashed var(--border);padding-top:10px}
+.bclaim span{font-size:12px;font-weight:700;color:var(--mutfg)}
+.tarea{resize:vertical;min-height:72px;font-family:inherit;line-height:1.5}
 .frow{display:flex;gap:8px}
 .frow .inp{flex:1}
 .crow{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--border)}
@@ -321,13 +337,14 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
     </div>
 
     <div class="sec">
-      <div class="sech"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8V4.5"/><circle cx="12" cy="12" r="8.2"/><path d="M8.8 10h.1M15.2 10h.1"/><path d="M9.2 14.6c.8.8 1.8 1.2 2.8 1.2s2-.4 2.8-1.2"/></svg>Сводка для чата с ИИ</div>
+      <div class="sech"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8V4.5"/><circle cx="12" cy="12" r="8.2"/><path d="M8.8 10h.1M15.2 10h.1"/><path d="M9.2 14.6c.8.8 1.8 1.2 2.8 1.2s2-.4 2.8-1.2"/></svg>Готовый запрос для ИИ</div>
       <div class="card excard">
-        <p class="desc">Текст с итогами по категориям и регулярными платежами. Скопируйте и отправьте ассистенту — он подскажет, от чего отказаться и чем заменить.</p>
+        <p class="desc">Внутри уже всё: регион, состав и возрасты, жильё, машина, работа взрослых, оформленные льготы, доход и все траты за период. Скопируйте и вставьте в любой ИИ — ChatGPT, Gemini, Claude, GigaChat… Уточнять ничего не нужно: ответ сразу скажет, что семье положено и где сэкономить.</p>
         <pre class="expre" id="exSummary"></pre>
         <div class="b2">
           <button type="button" class="btn pri" id="exCopyAi"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Скопировать</button>
           <button type="button" class="btn" id="exDlTxt"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M8 11.5l4 4 4-4"/><path d="M5 19.5h14"/></svg>Скачать .txt</button>
+          <button type="button" class="btn wide" id="exShareAi" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v12M8 8l4-4.5L16 8"/><path d="M5 12v7a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-7"/></svg>Поделиться — отправить в приложение ИИ</button>
         </div>
       </div>
     </div>
@@ -360,7 +377,7 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
 
   <!-- ======== ВКЛАДКА: НАСТРОЙКИ ======== -->
   <section class="pane" id="pane-settings">
-    <div class="shead" style="margin-bottom:10px">Доход семьи</div>
+    <div class="shead" style="margin-bottom:10px">Доход и регион</div>
     <div class="card scard">
       <div class="fld" style="margin-bottom:10px">
         <label for="setIncome">Месячный доход «чистыми», ₽</label>
@@ -368,16 +385,65 @@ body{background:#ececf0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto
           <input class="inp" id="setIncome" inputmode="decimal" placeholder="Например: 115000">
           <button type="button" class="btn pri" id="setIncomeOk" style="padding:0 18px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>ОК</button>
         </div>
-        <p class="hint" style="text-align:left;margin:8px 0 0">Можно указать средний, если доход плавает. Нужен для расчёта долей в аналитике.</p>
+        <p class="hint" style="text-align:left;margin:8px 0 0">Можно указать средний, если доход плавает. Нужен для расчёта долей в аналитике и запроса для ИИ.</p>
+      </div>
+      <div class="fld" style="margin-top:14px">
+        <label for="setRegion">Регион (субъект РФ)</label>
+        <select class="inp" id="setRegion"></select>
+        <p class="hint" style="text-align:left;margin:8px 0 0">С регионом ИИ в готовом запросе считает региональные льготы и субсидии по вашим правилам, а не «в среднем по стране».</p>
       </div>
     </div>
 
     <div class="shead" style="margin:18px 0 10px">Члены семьи</div>
     <div class="card scard">
       <div id="setMembers"></div>
+      <p class="finfo" id="setFamilyInfo" hidden></p>
       <div class="frow" style="margin-top:12px">
         <input class="inp" id="setMemberName" maxlength="30" placeholder="Имя, например: Жена">
         <button type="button" class="btn" id="setMemberAdd"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M4 21c.8-3.6 3.2-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M19 8v6M16 11h6"/></svg>Добавить</button>
+      </div>
+      <p class="hint" style="text-align:left;margin:10px 0 0">Год рождения нужен для подбора льгот: по возрастам приложение определит положенные семье выплаты и скидки.</p>
+    </div>
+
+    <div class="shead" style="margin:18px 0 10px">Жильё, машина и работа</div>
+    <div class="card scard">
+      <div class="fld">
+        <label for="setHousing">Жильё</label>
+        <select class="inp" id="setHousing">
+          <option value="">— не указано —</option>
+          <option value="own">Своя квартира или дом</option>
+          <option value="mortgage">Ипотека</option>
+          <option value="rent">Аренда</option>
+          <option value="family">Живём с родственниками</option>
+        </select>
+        <p class="hint" style="text-align:left;margin:8px 0 0">От жилья зависят льготы: 450 000 ₽ на ипотеку, семейная ставка ~6%, субсидия на коммуналку. Всё попадает в запрос для ИИ.</p>
+      </div>
+      <div class="fld" style="margin-top:14px">
+        <label for="setCars">Автомобиль</label>
+        <select class="inp" id="setCars">
+          <option value="">— не указано —</option>
+          <option value="none">Машины нет</option>
+          <option value="one">Один в семье</option>
+          <option value="many">Два и больше</option>
+        </select>
+        <p class="hint" style="text-align:left;margin:8px 0 0">Многодетным в большинстве регионов — скидка 100% на транспортный налог за одну машину.</p>
+      </div>
+      <div class="fld" style="margin-top:14px">
+        <label for="setEmployment">Работа взрослых</label>
+        <select class="inp" id="setEmployment">
+          <option value="">— не указано —</option>
+          <option value="official">Официальная работа (по трудовой)</option>
+          <option value="mixed">Кто-то официально, кто-то подрабатывает</option>
+          <option value="self">Самозанятость или ИП</option>
+          <option value="none">Не работаем (декрет, пенсия, пособия)</option>
+        </select>
+        <p class="hint" style="text-align:left;margin:8px 0 0">От белой зарплаты зависят налоговые вычеты — возврат до 13% с части дохода.</p>
+      </div>
+      <div class="fld" style="margin-top:14px">
+        <label for="setFamilyNotes">О семье — что ещё важно знать</label>
+        <textarea class="inp tarea" id="setFamilyNotes" rows="3" maxlength="500" placeholder="Например: у младшего инвалидность, платим кредит, планируем переезд…"></textarea>
+        <button type="button" class="btn" id="setFamilyNotesOk" style="width:100%;margin-top:8px">Сохранить заметку о семье</button>
+        <p class="hint" style="text-align:left;margin:8px 0 0">Инвалидность, кредиты, дача, планы на переезд — ИИ учтёт это в советах.</p>
       </div>
     </div>
 
@@ -689,12 +755,38 @@ function defaultData() {
   return {
     version: 1,
     income: 0,
+    region: '',
+    housing: '',
+    cars: '',
+    employment: '',
+    familyNotes: '',
     members: [{ id: 'me', name: 'Я' }],
     categories: DEFAULT_CATEGORIES.map(function (c) { return clone(c); }),
     expenses: [],
     regulars: [],
+    claims: {},
+    claimsNotes: '',
   };
 }
+
+/* Человеческие подписи для запроса ИИ и льгот */
+var HOUSING_LABELS = {
+  own: 'своя квартира или дом',
+  mortgage: 'ипотека (свой ежемесячный платёж)',
+  rent: 'аренда жилья',
+  family: 'живём с родственниками',
+};
+var CARS_LABELS = {
+  none: 'машины нет',
+  one: 'один автомобиль в семье',
+  many: 'два и больше автомобилей',
+};
+var EMPLOYMENT_LABELS = {
+  official: 'официальная работа по трудовой (белая зарплата, платим НДФЛ)',
+  mixed: 'часть взрослых работает официально, часть — подработки/самозанятость',
+  self: 'самозанятость или ИП (НДФЛ с зарплаты не удерживается)',
+  none: 'взрослые не работают (декрет, пенсия, пособия)',
+};
 
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -726,10 +818,17 @@ function loadBudget() {
     return {
       version: 1,
       income: isFiniteNum(parsed.income) ? parsed.income : 0,
+      region: (typeof parsed.region === 'string') ? parsed.region : '',
+      housing: (typeof parsed.housing === 'string') ? parsed.housing : '',
+      cars: (typeof parsed.cars === 'string') ? parsed.cars : '',
+      employment: (typeof parsed.employment === 'string') ? parsed.employment : '',
+      familyNotes: (typeof parsed.familyNotes === 'string') ? parsed.familyNotes : '',
       members: parsed.members,
       categories: parsed.categories.length > 0 ? parsed.categories : defaultData().categories,
       expenses: parsed.expenses,
       regulars: parsed.regulars,
+      claims: (parsed.claims && typeof parsed.claims === 'object' && !Array.isArray(parsed.claims)) ? parsed.claims : {},
+      claimsNotes: typeof parsed.claimsNotes === 'string' ? parsed.claimsNotes : '',
     };
   } catch (e) {
     // Повреждённые данные не теряем — бэкапим под другим ключом
@@ -850,7 +949,7 @@ function regularsForMonth(regulars, monthK) {
 function calcMonthStats(data, monthK) {
   var expensesOfMonth = data.expenses
     .filter(function (e) { return monthKeyOfISO(e.date) === monthK; })
-    .sort(function (a, b) { return a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date); });
+    .sort(function (a, b) { return a.date === b.date ? String(b.createdAt || '').localeCompare(String(a.createdAt || '')) : b.date.localeCompare(a.date); });
 
   var activeRegulars = regularsForMonth(data.regulars, monthK);
 
@@ -976,6 +1075,9 @@ function filterExpenses(data, period) {
     .sort(function (a, b) { return b.date.localeCompare(a.date); });
 }
 
+/* Готовый запрос для ИИ одним шагом: инструкция + все данные +
+   структура ответа. Работает в любом ассистенте (ChatGPT, Gemini,
+   Claude, GigaChat…) — уточнять ничего не нужно. */
 function buildAiSummary(data, period) {
   var income = data.income;
   var lines = [];
@@ -984,34 +1086,89 @@ function buildAiSummary(data, period) {
     return v === null ? '' : ' (' + v + '% дохода)';
   }
 
+  lines.push('Ты — финансовый консультант по льготам и экономии для российских семей.');
+  lines.push('Ниже — полные данные нашей семьи из трекера расходов. Проанализируй их и составь план: что нам положено от государства и где мы можем сэкономить.');
+  lines.push('Отвечай по-русски, сразу одним сообщением, без уточняющих вопросов: если каких-то данных не хватает, используй средние значения по нашему региону и помечай такие цифры словом «оценка».');
+  lines.push('');
+
+  var fam = benefitsSummaryLines();
+  if (fam.length) {
+    fam.forEach(function (s) { lines.push(s); });
+  } else {
+    lines.push('СЕМЬЯ И ДОХОД:');
+    lines.push('• Состав и возраст не указаны — считай по федеральным нормам, суммы помечай «оценка»');
+    lines.push('• Доход семьи: ' + (income > 0 ? money(income) + '/мес' : 'не указан'));
+    if (HOUSING_LABELS[data.housing]) lines.push('• Жильё: ' + HOUSING_LABELS[data.housing]);
+    if (CARS_LABELS[data.cars]) lines.push('• Автомобиль: ' + CARS_LABELS[data.cars]);
+    if (EMPLOYMENT_LABELS[data.employment]) lines.push('• Работа взрослых: ' + EMPLOYMENT_LABELS[data.employment]);
+    if (data.familyNotes) lines.push('• О семье: ' + data.familyNotes);
+    lines.push('');
+  }
+
   if (period === 'all') {
     var monthsSet = {};
     var total = 0;
     data.expenses.forEach(function (e) { monthsSet[e.date.slice(0, 7)] = 1; total += e.amount; });
     var monthsN = Object.keys(monthsSet).length;
-    lines.push('Сводка трат — всё время (' + monthsN + ' мес. записей, всего ' + money(total) + ')');
-    if (income > 0) lines.push('Доход семьи: ' + money(income) + '/мес');
+    lines.push('ТРАТЫ ЗА ВСЁ ВРЕМЯ (' + monthsN + ' ' + pluralRu(monthsN, 'месяц', 'месяца', 'месяцев') + ' записей, разовых всего ' + money(total) + '):');
+    if (monthsN > 0) lines.push('• Разовые траты в среднем: ' + money(total / monthsN) + '/мес');
+    var activeAll = data.regulars.filter(function (r) { return r.active && r.startDate.slice(0, 7) <= currentMonthKey(); });
+    var regSum = 0;
+    activeAll.forEach(function (r) { regSum += monthlyEquivalent(r); });
+    if (activeAll.length) lines.push('• Регулярные платежи: ≈ ' + money(regSum) + '/мес (список ниже)');
     lines.push('');
     var byCat = {};
     data.expenses.forEach(function (e) { byCat[e.categoryId] = (byCat[e.categoryId] || 0) + e.amount; });
     var sorted = Object.keys(byCat).map(function (k) { return [k, byCat[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
-    lines.push('РАЗОВЫЕ ТРАТЫ ПО КАТЕГОРИЯМ:');
+    lines.push('ПО КАТЕГОРИЯМ (разовые за всё время):');
     if (sorted.length === 0) lines.push('— записей нет');
     sorted.forEach(function (pair, i) {
       lines.push((i + 1) + '. ' + categoryName(data, pair[0]) + ' — ' + money(pair[1]));
     });
+    if (activeAll.length) {
+      lines.push('');
+      lines.push('РЕГУЛЯРНЫЕ ПЛАТЕЖИ (в пересчёте на месяц):');
+      activeAll.forEach(function (r) {
+        var cat = categoryName(data, r.categoryId);
+        var who = memberName(data, r.memberId);
+        var note = r.note ? ' (' + r.note + ')' : '';
+        var perMonth = '≈' + money(monthlyEquivalent(r)) + '/мес';
+        if (r.recurrence === 'monthly') {
+          lines.push('• ' + money(r.amount) + '/мес — ' + cat + note + (who ? ' — платит: ' + who : ''));
+        } else {
+          lines.push('• ' + money(r.amount) + '/год (' + perMonth + ') — ' + cat + note + (who ? ' — платит: ' + who : ''));
+        }
+      });
+    }
+    var topAll = data.expenses.slice().sort(function (a, b) { return b.amount - a.amount; }).slice(0, 5);
+    if (topAll.length) {
+      lines.push('');
+      lines.push('КРУПНЕЙШИЕ РАЗОВЫЕ ТРАТЫ ЗА ВСЁ ВРЕМЯ:');
+      topAll.forEach(function (e, i) {
+        var note = e.note ? ' — ' + e.note : '';
+        lines.push((i + 1) + '. ' + money(e.amount) + ' — ' + categoryName(data, e.categoryId) + note + ' — ' + dayShort(e.date));
+      });
+    }
   } else {
     var monthK = period === 'this' ? currentMonthKey() : (function () {
       var d = new Date(); d.setMonth(d.getMonth() - 1);
       return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
     })();
     var stats = calcMonthStats(data, monthK);
-    lines.push('Сводка трат за ' + monthTitleLower(monthK));
-    lines.push(income > 0 ? 'Доход семьи: ' + money(income) + '/мес' : 'Доход семьи: не указан');
-    lines.push('');
-    lines.push('ИТОГО НАГРУЗКА: ' + money(stats.burnTotal) + p(stats.burnTotal));
+    lines.push('ТРАТЫ ЗА ' + monthTitleLower(monthK).toUpperCase() + ':');
+    lines.push('• Итого нагрузка: ' + money(stats.burnTotal) + p(stats.burnTotal));
     lines.push('• Разовые траты: ' + money(stats.onceTotal) + p(stats.onceTotal));
     lines.push('• Регулярные платежи: ' + money(stats.regularTotal) + '/мес' + p(stats.regularTotal));
+    if (period === 'this' && monthK === currentMonthKey()) {
+      var nowD = new Date();
+      var dim = new Date(nowD.getFullYear(), nowD.getMonth() + 1, 0).getDate();
+      if (nowD.getDate() < dim) {
+        var recDays = {};
+        stats.expensesOfMonth.forEach(function (e) { recDays[e.date] = 1; });
+        var nDays = Object.keys(recDays).length;
+        lines.push('• Внимание: месяц ещё не закончен (записи за ' + nDays + ' ' + pluralRu(nDays, 'день', 'дня', 'дней') + ' из ' + dim + ') — при анализе пересчитай траты в средние за полный месяц, не считай, что это вся месячная сумма');
+      }
+    }
     lines.push('');
     lines.push('ПО КАТЕГОРИЯМ (разовые + регулярные в пересчёте на месяц):');
     if (stats.byCategory.length === 0) lines.push('— записей нет');
@@ -1044,6 +1201,15 @@ function buildAiSummary(data, period) {
     }
   }
 
+  lines.push('');
+  lines.push('ЗАДАЧА. Верни ровно эти разделы — по нашим цифрам, не общими словами:');
+  lines.push('1. «Что нам положено» — все доступные семье льготы, выплаты, субсидии и налоговые вычеты: федеральные и региональные' + (data.region ? ' по региону «' + data.region + '»' : ' (регион не указан — используй федеральные нормы)') + '. По каждому пункту: сумма ₽/год и как оформить (куда идти, какие документы).');
+  lines.push('2. «Уже получаем» — что из этого оформлено и сколько это приносит ₽/год.');
+  lines.push('3. «Недополучаем» — что положено, но не оформлено: сколько семья теряет ₽/год по каждому пункту и в сумме.');
+  lines.push('4. «Скидки по картам и акциям» — коммерческие скидки для наших категорий (смотри состав семьи выше): аптеки, продукты, одежда, транспорт, связь, развлечения.');
+  lines.push('5. «Где сэкономить по тратам» — по каждой категории из сводки: как сократить расходы без потери качества, оценка экономии ₽/мес.');
+  lines.push('6. «План действий» — таблица «действие → эффект ₽/год → срок» по убыванию выгоды; отметь, что можно сделать за 1 день, за неделю, за месяц.');
+  lines.push('В конце: итоговая сумма возможной выгоды ₽/год и топ-3 действия, с которых начать прямо сегодня.');
   lines.push('');
   lines.push('Сгенерировано ' + todayISO() + ' в приложении «Семейный бюджет»');
   return lines.join('\n');
@@ -1134,6 +1300,7 @@ var ICONS = {
   log: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.8" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.8" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.8" cy="18" r="1.1" fill="currentColor" stroke="none"/>',
   pie: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4"/>',
   wallet: '<path d="M3 7a2 2 0 0 1 2-2h12.5L19 7"/><path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16.5 13.5h.01"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1.5"/><path d="M12 12v9"/><path d="M5 12v6.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V12"/><path d="M12 8c0-3 2-5 4.5-5C16 5 14.5 6.5 12 8z"/><path d="M12 8c0-3-2-5-4.5-5C8 5 9.5 6.5 12 8z"/>',
 };
 
 var XICON = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -1232,7 +1399,7 @@ function switchTab(id) {
    Всё офлайн: данные чека никуда не отправляются.
    ===================================================================== */
 
-var scan = { stream: null, timer: null, active: false, torch: false, track: null };
+var scan = { stream: null, timer: null, active: false, torch: false, track: null, ticks: 0, msgLock: false };
 var scanCanvas = document.createElement('canvas');
 
 function ruDateShort(iso) {
@@ -1304,6 +1471,8 @@ function openScanner() {
   if (scan.active) return;
   scan.active = true;
   scan.torch = false;
+  scan.ticks = 0;
+  scan.msgLock = false;
 
   var live = canLiveScan();
   $('#scanroot').innerHTML =
@@ -1315,7 +1484,7 @@ function openScanner() {
         '<div class="scanframe"></div>' +
         (live ? '<button type="button" class="btn" id="scanTorch" hidden>Фонарик</button>' : '') +
         '<div class="scanmsg" id="scanMsg">' + (live
-          ? 'Наведите камеру на квадратный QR-код внизу чека'
+          ? 'Поднесите телефон к QR-коду на 10–15 см — код в центре рамки'
           : 'Камера недоступна в этом режиме — сфотографируйте чек и выберите снимок') + '</div>' +
       '</div>' +
       '<div class="scanfoot">' +
@@ -1351,7 +1520,7 @@ function startLive() {
   var msg = $('#scanMsg');
   navigator.mediaDevices.getUserMedia({
     audio: false,
-    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
   }).then(function (stream) {
     if (!scan.active) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { /* ignore */ } return; }
     scan.stream = stream;
@@ -1374,7 +1543,7 @@ function startLive() {
     } catch (e) { /* ignore */ }
     // Не трогаем сообщение здесь: пользователь мог уже выбрать снимок,
     // а камера подключилась с задержкой — перезапишет подсказку об ошибке.
-    scan.timer = setInterval(scanTick, 240);
+    scan.timer = setInterval(scanTick, 280);
   }).catch(function (err) {
     msg.textContent = err && err.name === 'NotAllowedError'
       ? 'Нет доступа к камере. Разрешите камеру или сфотографируйте чек и выберите снимок ниже'
@@ -1385,12 +1554,26 @@ function startLive() {
 function scanTick() {
   var video = $('#scanVideo');
   if (!video || !scan.active || !video.videoWidth) return;
-  var w = 640, h = Math.round(video.videoHeight * (w / video.videoWidth));
-  scanCanvas.width = w; scanCanvas.height = h;
+  scan.ticks++;
+  if (!scan.msgLock) {
+    var hint = $('#scanMsg');
+    if (hint) {
+      if (scan.ticks === 24) hint.textContent = 'Ближе: QR должен занять не меньше половины рамки. Держите телефон параллельно чеку, без наклона';
+      else if (scan.ticks === 50) hint.textContent = 'Не читается? Включите фонарик или нажмите «Сделать фото чека» — по снимку распознаётся надёжнее';
+    }
+  }
+  // Читаем не весь кадр, а центральный квадрат почти в родном разрешении:
+  // у фискального QR десятки мелких модулей, при сжатии полного кадра
+  // они сливаются и код не распознаётся. Кроп = цифровой зум для декодера.
+  var vw = video.videoWidth, vh = video.videoHeight;
+  var side = Math.round(Math.min(vw, vh) * 0.72);
+  var sx = (vw - side) >> 1, sy = (vh - side) >> 1;
+  var target = side < 640 ? 640 : (side > 800 ? 800 : side);
+  scanCanvas.width = target; scanCanvas.height = target;
   var ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(video, 0, 0, w, h);
-  var img = ctx.getImageData(0, 0, w, h);
-  var code = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
+  ctx.drawImage(video, sx, sy, side, side, 0, 0, target, target);
+  var img = ctx.getImageData(0, 0, target, target);
+  var code = jsQR(img.data, target, target, { inversionAttempts: 'dontInvert' });
   if (code && code.data) handleScanned(code.data);
 }
 
@@ -1398,6 +1581,7 @@ function onScanFile(ev) {
   var file = ev.target.files && ev.target.files[0];
   ev.target.value = '';
   if (!file) return;
+  scan.msgLock = true;
   var msg = $('#scanMsg');
   msg.textContent = 'Читаю снимок…';
   var url = URL.createObjectURL(file);
@@ -1408,7 +1592,7 @@ function onScanFile(ev) {
     // Пробуем снимок в нескольких масштабах; нативный размер — всегда,
     // маленький чёткий скриншот QR (даже 100x100) декодируется как есть.
     var tried = {};
-    var scales = [1600, 1000, 640, img.naturalWidth];
+    var scales = [1600, 1000, 800, 640, img.naturalWidth];
     for (var i = 0; i < scales.length && !found; i++) {
       var w = Math.min(scales[i], img.naturalWidth);
       if (w < 100 || tried[w]) continue;
@@ -1422,11 +1606,13 @@ function onScanFile(ev) {
       if (code && code.data) { found = true; handleScanned(code.data); }
     }
     if (!found && scan.active) {
+      scan.msgLock = false;
       msg.textContent = 'QR на снимке не найден. Сфотографируйте чек целиком, резче и ближе к QR-коду';
     }
   };
   img.onerror = function () {
     URL.revokeObjectURL(url);
+    scan.msgLock = false;
     if (scan.active) msg.textContent = 'Не удалось открыть снимок';
   };
   img.src = url;
@@ -1630,7 +1816,7 @@ function renderJournal() {
     $('#jrDays').innerHTML = html;
   }
 
-  var regs = data.regulars.slice().sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+  var regs = data.regulars.slice().sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
   $('#jrRegCount').textContent = data.regulars.filter(function (r) { return r.active; }).length + ' активн.';
   if (regs.length === 0) {
     $('#jrRegs').innerHTML = '<div class="card" style="padding:16px;border-style:dashed;text-align:center">' +
@@ -1838,6 +2024,7 @@ function renderAnalytics() {
   }
   h += '<div class="an2"><div><div class="k">Разовые траты</div><div class="v">' + money(stats.onceTotal) + '</div></div>' +
     '<div><div class="k">Регулярные /мес</div><div class="v">' + money(stats.regularTotal) + '</div></div></div></div>';
+  h += renderBenefitsCard();
 
   if (!hasAnything) {
     h += emptyHTML('pie', 'За этот месяц данных нет', 'Добавьте траты и регулярные платежи — аналитика построится автоматически.');
@@ -1850,7 +2037,7 @@ function renderAnalytics() {
         h += '<div class="cbar"><div class="t"><b>' + esc(a.category.name) + '</b>' +
           '<span class="num">' + money(a.total) + (share !== null ? ' <span class="sh">' + share + '%</span>' : '') + '</span></div>';
         h += '<div class="ctrack"><i style="width:' + (a.once / maxCat * 100).toFixed(1) + '%;background:' + a.category.color + '"></i>' +
-          '<i style="width:' + (a.regular / maxCat * 100).toFixed(1) + '%;background:' + a.category.color + ';opacity:.45"></i></div>';
+          '<i style="width:' + (a.regular / maxCat * 100).toFixed(1) + '%;background:' + a.category.color + ';opacity:.45"></i></div></div>';
         if (a.regular > 0 && a.once > 0) {
           h += '<p class="cnote" style="margin:0 0 4px">разовые ' + money(a.once) + ' + регулярные ≈' + money(a.regular) + '</p>';
         }
@@ -1864,8 +2051,8 @@ function renderAnalytics() {
         var cat = categoryById(data, r.categoryId);
         h += '<div class="row plain">' + bubbleIcon(cat) +
           '<p class="mid" style="margin:0;min-width:0"><span class="rname">' + esc(r.note || (cat ? cat.name : 'Платёж')) + '</span></p>' +
-          '<span class="rsub" style="flex:none">' + (r.recurrence === 'monthly' ? money(r.amount) + '/мес' : money(r.amount) + '/год') + '</span>' +
-          '<span class="ramt">≈' + money(monthlyEquivalent(r)) + '</span></div>';
+          '<span class="ramt">≈' + money(monthlyEquivalent(r)) +
+          '<span class="rper">' + (r.recurrence === 'monthly' ? money(r.amount) + '/мес' : money(r.amount) + '/год') + '</span></span></div>';
       });
       h += '</div>';
     }
@@ -1896,6 +2083,343 @@ function renderAnalytics() {
 function initAnalytics() {
   $('#anPrev').addEventListener('click', function () { anMonth = shiftMonth(anMonth, -1); renderAnalytics(); });
   $('#anNext').addEventListener('click', function () { anMonth = shiftMonth(anMonth, 1); renderAnalytics(); });
+  $('#anBody').addEventListener('click', function (ev) {
+    if (ev.target.closest('#anBenefitsGo')) { switchTab('settings'); return; }
+    if (ev.target.closest('#anBenefitsOpen')) { openBenefits(); }
+  });
+}
+
+/* =====================================================================
+   ЛЬГОТЫ И СКИДКИ (подбор по профилю семьи: возрастам, жилью, машине,
+   работе и доле ЖКХ в доходе). Приложение подсказывает, что проверить;
+   суммы зависят от региона — перед оформлением сверяйтесь
+   на Госуслугах или в соцзащите.
+   ===================================================================== */
+
+function pluralRu(n, one, few, many) {
+  var m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+function memberAge(m) {
+  if (!m.year) return null;
+  var a = new Date().getFullYear() - m.year;
+  return (a >= 0 && a < 120) ? a : null;
+}
+
+function familyFacts() {
+  var kids = [], adults = 0, noYear = 0, seniors = 0, students = 0;
+  data.members.forEach(function (m) {
+    var a = memberAge(m);
+    if (a === null) noYear++;
+    else if (a < 18) kids.push(a);
+    else {
+      adults++;
+      if (a >= 60) seniors++;
+      if (a <= 23) students++;
+    }
+  });
+  kids.sort(function (a, b) { return a - b; });
+  var perHead = null;
+  if (data.income > 0 && data.members.length > 0) perHead = data.income / data.members.length;
+  return {
+    kids: kids, adults: adults, noYear: noYear,
+    kids18: kids.length,
+    mnogodet: kids.length >= 3,
+    school: kids.some(function (a) { return a >= 7; }),
+    seniors: seniors, students: students,
+    perHead: perHead,
+  };
+}
+
+/* Стандартный вычет на детей: возврат НДФЛ за год.
+   Порядок рождения: старший ребёнок считается первым,
+   на третьего и последующих ставка вычета выше. */
+function vychetYear(f) {
+  var ordered = f.kids.slice().sort(function (a, b) { return b - a; });
+  var base = 0;
+  for (var i = 0; i < ordered.length; i++) base += (i < 2) ? 1400 : 3000;
+  return Math.round(base * 0.13 * 12);
+}
+
+/* Доля «ЖКХ и дом» в доходе за последний полный месяц —
+   ориентир для субсидии на оплату ЖКУ */
+function zhkuSharePct() {
+  if (!(data.income > 0)) return null;
+  var monthsSet = {};
+  data.expenses.forEach(function (e) { monthsSet[e.date.slice(0, 7)] = 1; });
+  var keys = Object.keys(monthsSet).sort();
+  if (!keys.length) return null;
+  var last = keys[keys.length - 1];
+  if (last === currentMonthKey() && keys.length >= 2) last = keys[keys.length - 2];
+  var stats = calcMonthStats(data, last);
+  var housing = 0;
+  stats.byCategory.forEach(function (a) { if (a.category.id === 'housing') housing += a.total; });
+  return Math.round(housing / data.income * 100);
+}
+
+var BENEFITS = [
+  { id: 'vychet', region: false,
+    who: function (f) {
+      if (f.kids18 < 1) return false;
+      if (data.employment === 'self' || data.employment === 'none') return 'maybe';
+      return 'yes';
+    },
+    title: 'Налоговый вычет на детей',
+    desc: 'С зарплаты перестают удерживать НДФЛ с части дохода: 1 400 ₽/мес на первого и второго ребёнка, 3 000 ₽ — на третьего и каждого следующего, пока ребёнку нет 18 (очному студенту — до 24).',
+    note: 'Работает, пока доход родителя с начала года не превысил 450 000 ₽. Единственному родителю вычет удваивается. Оформляется у работодателя или через личный кабинет ФНС.' +
+      ((data.employment === 'self' || data.employment === 'none') ? ' Внимание: нужен официальный доход — при самозанятости или без работы вычет не действует.' : ''),
+    amount: function (f) { return '≈ ' + money(vychetYear(f)) + '/год'; } },
+  { id: 'zhkh', region: true,
+    who: function (f) { return f.mnogodet ? 'yes' : false; },
+    title: 'Скидка на коммуналку — 30–50%',
+    desc: 'Семьям с тремя и более несовершеннолетними детьми — компенсация части платы за жильё и ЖКУ: не меньше 30% по федеральной норме, в большинстве регионов — 50%.',
+    note: 'Размер зависит от региона и начисленных платежей; оформляется в МФЦ или соцзащите.' },
+  { id: 'pitanie', region: true,
+    who: function (f) { return f.school ? (f.mnogodet ? 'yes' : 'maybe') : false; },
+    title: 'Бесплатное питание в школе',
+    desc: 'Всем школьникам 1–4 классов положен бесплатный горячий завтрак. Детям из многодетных семей в большинстве регионов — бесплатное питание и в старших классах.' },
+  { id: 'lekarstva', region: false,
+    who: function (f) { return f.kids.some(function (a) { return a <= 2; }) ? 'yes' : false; },
+    title: 'Бесплатные лекарства до 3 лет',
+    desc: 'Детям до 3 лет лекарства из федерального перечня выдают бесплатно по рецепту педиатра. В ряде регионов списки шире (для многодетных — до 6 лет и старше).' },
+  { id: 'rozhdenie', region: false,
+    who: function (f) { return f.kids.indexOf(0) >= 0 ? 'yes' : false; },
+    title: 'Единовременная выплата при рождении',
+    desc: 'Однократная выплата одному из родителей на ребёнка, рождённого в этом году. Обращаться лучше в первые полгода после родов — можно через Госуслуги.',
+    note: 'Размер ежегодно индексируется; точную сумму подскажут Госуслуги или соцзащита.' },
+  { id: 'edinoe', region: false,
+    who: function (f) { return f.kids18 >= 1 ? 'maybe' : false; },
+    title: 'Единое пособие на детей',
+    desc: 'Ежемесячная выплата семьям с детьми до 17 лет (и беременным) при среднедушевом доходе ниже прожиточного минимума региона: 50–100% детского прожиточного минимума.',
+    note: 'Ориентир: сравните доход на одного члена семьи с минимумом региона (обычно 15–20 тыс. ₽).' },
+  { id: 'materkap', region: false,
+    who: function (f) { return f.kids.some(function (a) { return a <= 6; }) ? 'maybe' : false; },
+    title: 'Материнский капитал',
+    desc: 'С 2020 года капитал назначается уже на первого ребёнка; при рождении второго — доплата. Часто оформляется автоматически, но если дети рождены в 2020 году и позже и капитала не было — проверьте на Госуслугах.' },
+  { id: 'sadik', region: true,
+    who: function (f) { return f.kids.some(function (a) { return a >= 3 && a <= 6; }) ? 'maybe' : false; },
+    title: 'Возврат платы за детский сад',
+    desc: 'Компенсация части родительской платы: 20% на первого ребёнка, 50% на второго, 70% на третьего и последующих. В некоторых регионах многодетным возвращают больше или не берут плату вовсе.' },
+  { id: 'ipoteka', region: false,
+    who: function (f) {
+      if (!(f.kids.some(function (a) { return a <= 6; }) || f.kids18 >= 2)) return false;
+      return (data.housing === 'rent' || data.housing === 'mortgage') ? 'yes' : 'maybe';
+    },
+    title: 'Семейная ипотека под ~6%',
+    desc: 'Льготная ставка на новостройку или строительство дома: семьям с ребёнком до 7 лет или с двумя несовершеннолетними детьми. Программа действует до 2030 года; существующую ипотеку можно рефинансировать.' },
+  { id: 'ipoteka450', region: false,
+    who: function (f) {
+      if (data.housing !== 'mortgage') return false;
+      return f.kids.some(function (a) { return a >= 3 && a <= 7; }) ? 'yes' : 'maybe';
+    },
+    title: '450 000 ₽ на погашение ипотеки',
+    desc: 'Многодетным государство единоразово гасит ипотеку на 450 000 ₽. Основная волна — семьи, где ребёнок родился в 2019–2023 годах; по правилам после 2024 года — семьи с ребёнком до 6 лет при доходе ниже лимита. Заявление подаётся в банк, где оформлена ипотека.',
+    amount: function (f) { return '450 000 ₽ разово'; } },
+  { id: 'subsidia', region: true,
+    who: function (f) {
+      var pct = zhkuSharePct();
+      if (pct === null) return false;
+      return pct >= 20 ? 'yes' : (pct >= 11 ? 'maybe' : false);
+    },
+    title: 'Субсидия на оплату ЖКУ',
+    desc: 'Если коммуналка съедает больше доли дохода семьи (в большинстве регионов — 22%, в Москве — 10%, в Санкт-Петербурге — 14%), государство каждый месяц возвращает часть платы за ЖКУ. По нашим записям «ЖКХ и дом» занимает заметную долю ваших расходов. Оформляется в МФЦ или на Госуслугах.' },
+  { id: 'transpnalog', region: true,
+    who: function (f) {
+      if (!f.mnogodet) return false;
+      if (data.cars === 'none') return false;
+      return data.cars ? 'yes' : 'maybe';
+    },
+    title: 'Освобождение от транспортного налога',
+    desc: 'Многодетным в большинстве регионов — скидка 100% на транспортный налог за один автомобиль в семье (лимит мощности зависит от региона, где-то льгота частичная). Заявление — в налоговую или через Госуслуги; пересчитают с начала года.' },
+  { id: 'obuchenie', region: false,
+    who: function (f) { return f.kids.some(function (a) { return a >= 16; }) ? 'maybe' : false; },
+    title: 'Вычет за обучение ребёнка',
+    desc: 'Если ребёнок (до 24 лет, очная форма) учится платно — возврат 13% от платы: до 6 500 ₽ в год на каждого ребёнка. Декларация подаётся через личный кабинет ФНС.' },
+  { id: 'transport', region: true,
+    who: function (f) { return f.school ? 'maybe' : false; },
+    title: 'Льготный проезд школьника',
+    desc: 'В большинстве регионов школьникам — скидка 50% на пригородные электрички в учебный год и льготный проездной на городской транспорт (по карте школьника).' },
+  { id: 'sotskontrakt', region: true,
+    who: function (f) { return (f.perHead === null || f.perHead < 22000) ? 'maybe' : false; },
+    title: 'Социальный контракт',
+    desc: 'Поддержка для семей с доходом ниже прожиточного минимума: пособие на повседневные нужды или до 350 тыс. ₽ на открытие своего дела / подсобного хозяйства. Оформляется в соцзащите.' },
+  { id: 'pensioner', region: true,
+    who: function (f) { return f.seniors >= 1 ? 'maybe' : false; },
+    title: 'Льготы пенсионера в семье',
+    desc: 'Если среди взрослых есть человек 60+: освобождение от транспортного налога (один автомобиль, зависит от региона), льгота по налогу на имущество, санаторные путёвки по направлению врача, доплаты после 80 лет.' },
+  { id: 'student', region: true,
+    who: function (f) { return f.students >= 1 ? 'maybe' : false; },
+    title: 'Скидки студенту (18–23)',
+    desc: 'Очной форме до 24 лет положены льготные проездные и 50% на пригородные электрички в учебный год; во многих магазинах — скидки по студенческому. Заочникам — справка-вызов на сессию с сохранением зарплаты.' },
+];
+
+function benefitsFor() {
+  var f = familyFacts();
+  return BENEFITS.map(function (b) {
+    var st = b.who(f);
+    return { b: b, st: st || 'no', f: f };
+  });
+}
+
+/* Блок «СЕМЬЯ И ДОХОД» для готового запроса ИИ: регион, возраст,
+   состав, доход, оформленные и доступные льготы */
+function benefitsSummaryLines() {
+  var f = familyFacts();
+  var lines = [];
+  if (f.kids18 === 0 && f.adults === 0) return lines;
+  var list = benefitsFor();
+  var yes = list.filter(function (x) { return x.st === 'yes'; });
+  var maybe = list.filter(function (x) { return x.st === 'maybe'; });
+  var claimed = yes.filter(function (x) { return data.claims[x.b.id]; });
+  var unclaimed = yes.filter(function (x) { return !data.claims[x.b.id]; });
+
+  lines.push('СЕМЬЯ И ДОХОД:');
+  lines.push('• Регион: ' + (data.region
+    ? data.region + ' — региональные льготы и субсидии считай по правилам этого региона'
+    : 'не указан — используй федеральные нормы, суммы помечай «оценка»'));
+  var withAges = [];
+  data.members.forEach(function (m) {
+    var a = memberAge(m);
+    withAges.push(m.name + (a === null
+      ? ' (возраст не указан)'
+      : ' — ' + a + ' ' + pluralRu(a, 'год', 'года', 'лет')));
+  });
+  if (withAges.length) lines.push('• Состав (' + withAges.length + ' чел.): ' + withAges.join(', '));
+  if (f.mnogodet) lines.push('• Статус: многодетная семья — ' + f.kids18 + ' несовершеннолетних детей');
+  if (f.seniors) lines.push('• В семье есть пенсионер (' + f.seniors + ' чел. 60+)');
+  if (f.students) lines.push('• В семье есть студент 18–23 (' + f.students + ' чел.)');
+  if (f.noYear) lines.push('• Ещё ' + f.noYear + ' ' + pluralRu(f.noYear, 'член семьи без года рождения', 'члена семьи без года рождения', 'членов семьи без года рождения'));
+  lines.push('• Доход семьи: ' + (data.income > 0
+    ? money(data.income) + '/мес' + (f.perHead ? ' (≈ ' + money(f.perHead) + ' на человека)' : '')
+    : 'не указан'));
+  if (HOUSING_LABELS[data.housing]) lines.push('• Жильё: ' + HOUSING_LABELS[data.housing]);
+  if (CARS_LABELS[data.cars]) lines.push('• Автомобиль: ' + CARS_LABELS[data.cars]);
+  if (EMPLOYMENT_LABELS[data.employment]) lines.push('• Работа взрослых: ' + EMPLOYMENT_LABELS[data.employment]);
+  if (data.familyNotes) lines.push('• О семье: ' + data.familyNotes);
+  if (data.claimsNotes) lines.push('• Свои скидки, о которых мы знаем: ' + data.claimsNotes);
+  if (claimed.length) {
+    lines.push('• Уже оформлено: ' + claimed.map(function (x) {
+      return x.b.title + (x.b.amount ? ' (' + x.b.amount(f) + ')' : '');
+    }).join('; ') + '.');
+  }
+  if (unclaimed.length) {
+    lines.push('• Положено, но НЕ оформлено: ' + unclaimed.map(function (x) {
+      return x.b.title + (x.b.amount ? ' (' + x.b.amount(f) + ')' : '') + (x.b.region ? ' [сумма зависит от региона]' : '');
+    }).join('; ') + '.');
+  }
+  if (maybe.length) {
+    lines.push('• Проверить (зависит от условий): ' + maybe.map(function (x) { return x.b.title; }).join('; ') + '.');
+  }
+  lines.push('');
+  return lines;
+}
+
+/* Строка-резюме о семье под списком членов семьи в настройках */
+function updateFamilyInfo() {
+  var el = $('#setFamilyInfo');
+  if (!el) return;
+  var f = familyFacts();
+  if (f.kids18 === 0 && f.adults === 0) {
+    el.hidden = false;
+    el.innerHTML = 'Годы рождения не указаны: заполните колонку «год рожд.» — приложение подберёт положенные семье льготы и посчитает возврат НДФЛ.';
+    return;
+  }
+  var parts = [];
+  if (f.adults) parts.push('<b>' + f.adults + ' ' + pluralRu(f.adults, 'взрослый', 'взрослых', 'взрослых') + '</b>');
+  if (f.kids.length) parts.push('<b>дети ' + f.kids.join(', ') + '</b>');
+  var s = parts.join(' · ');
+  if (f.mnogodet) s += ' · <b>многодетная семья</b>';
+  if (f.noYear) s += ' · ещё ' + f.noYear + ' ' + pluralRu(f.noYear, 'без года рождения', 'без года рождения', 'без года рождения');
+  var total = benefitsFor().filter(function (x) { return x.st === 'yes'; }).length;
+  s += '.<br>Положено льгот по возрастам: <b>' + total + '</b> — список в «Аналитике».';
+  el.hidden = false;
+  el.innerHTML = s;
+}
+
+/* Карточка «Льготы и экономия» на вкладке «Аналитика» */
+function renderBenefitsCard() {
+  var f = familyFacts();
+  if (data.members.length === 0) return '';
+  if (f.kids18 === 0 && f.adults === 0) {
+    return '<div class="card anb" id="anBenefits">' +
+      '<div class="top"><span class="k">Льготы и скидки</span><span class="v">' + iconSVG('gift') + '</span></div>' +
+      '<p class="hint" style="text-align:left;margin:2px 0 10px">Укажите годы рождения членов семьи в «Настройках» — подберём положенные льготы и посчитаем, сколько семья недополучает.</p>' +
+      '<button type="button" class="btn" id="anBenefitsGo">Указать годы рождения</button></div>';
+  }
+  var list = benefitsFor();
+  var yes = list.filter(function (x) { return x.st === 'yes'; });
+  var claimed = yes.filter(function (x) { return data.claims[x.b.id]; });
+  var hasVychet = false;
+  for (var i = 0; i < yes.length; i++) if (yes[i].b.id === 'vychet' && !data.claims.vychet) hasVychet = true;
+  var val;
+  if (hasVychet) val = '≈ ' + money(vychetYear(f)) + '/год';
+  else if (yes.length === 0) val = '—';
+  else val = claimed.length + ' из ' + yes.length;
+  var hint = yes.length
+    ? 'Положено по возрастам: ' + yes.length + ' ' + pluralRu(yes.length, 'льгота', 'льготы', 'льгот') + ', оформлено ' + claimed.length + (f.mnogodet ? ' · многодетная семья' : '')
+    : 'По возрастам льгот не найдено — загляните в список на всякий случай';
+  return '<div class="card anb" id="anBenefits">' +
+    '<div class="top"><span class="k">Льготы и экономия</span><span class="v">' + val + '</span></div>' +
+    '<p class="hint" style="text-align:left;margin:2px 0 10px">' + hint + '</p>' +
+    '<button type="button" class="btn" id="anBenefitsOpen">Список льгот и скидок</button></div>';
+}
+
+/* Полный список льгот с чек-листом «оформлено» */
+function openBenefits() {
+  var f = familyFacts();
+  var list = benefitsFor();
+  var yes = list.filter(function (x) { return x.st === 'yes'; });
+  var maybe = list.filter(function (x) { return x.st === 'maybe'; });
+
+  function row(x) {
+    var on = !!data.claims[x.b.id];
+    var kind = x.st === 'yes' ? (x.b.region ? 'регион' : 'федеральная') : 'проверить';
+    return '<div class="brow' + (on ? ' ok' : '') + '" data-kind="' + kind + '">' +
+      '<div class="bt"><b>' + esc(x.b.title) + '</b><span class="bdot">' + (on ? 'оформлено' : kind) + '</span></div>' +
+      '<p class="bd">' + esc(x.b.desc) + '</p>' +
+      (x.st === 'yes' && x.b.amount ? '<p class="ba' + (x.b.region ? ' reg' : '') + '">' + esc(x.b.amount(f)) + '</p>' : '') +
+      (x.b.note ? '<p class="bd">' + esc(x.b.note) + '</p>' : '') +
+      '<div class="bclaim"><span>' + (on ? 'Оформлено — отлично' : 'Отметьте, когда оформите') + '</span>' +
+      '<button type="button" class="sw' + (on ? ' on' : '') + '" data-claim="' + x.b.id + '" aria-label="' + esc(x.b.title) + ' — оформлено"></button></div></div>';
+  }
+
+  var h = '<div class="dhead"><b>Льготы и скидки</b><button type="button" class="iconbtn" data-mclose>' + XICON + '</button></div>';
+  if (f.kids18 === 0 && f.adults === 0) {
+    h += '<p class="dtxt">Заполните годы рождения членов семьи в «Настройках» — и здесь появятся положенные вашей семье льготы и выплаты.</p>';
+  }
+  if (yes.length) h += '<p class="lbl" style="margin-top:2px">Положено вашей семье</p>' + yes.map(row).join('');
+  if (maybe.length) h += '<p class="lbl">Проверьте — зависит от условий</p>' + maybe.map(row).join('');
+  h += '<p class="lbl">Свои скидки и льготы</p>' +
+    '<textarea class="inp tarea" id="claimNotes" rows="3" placeholder="Например: карта магазина — скидка 5%, у старшего льготный проездной…">' + esc(data.claimsNotes || '') + '</textarea>' +
+    '<button type="button" class="pbtn" id="claimNotesOk" style="margin-top:8px">Сохранить заметку</button>' +
+    '<p class="dtxt" style="margin-top:14px">Суммы и правила зависят от региона и меняются — перед оформлением сверьтесь на Госуслугах или в соцзащите. Отметки «оформлено» и этот список попадают в готовый запрос для ИИ (вкладка «Выгрузка»): он подскажет, что оформить в первую очередь.</p>';
+
+  var r = openModal(h);
+  $('#claimNotesOk', r).addEventListener('click', function () {
+    data.claimsNotes = $('#claimNotes', r).value.trim();
+    persist();
+    toast('Заметка сохранена', 'Попадёт в запрос для ИИ');
+  });
+  r.addEventListener('click', function (ev) {
+    var t = ev.target.closest ? ev.target.closest('[data-claim]') : null;
+    if (!t) return;
+    var id = t.getAttribute('data-claim');
+    if (data.claims[id]) delete data.claims[id]; else data.claims[id] = true;
+    persist();
+    t.classList.toggle('on', !!data.claims[id]);
+    var rowEl = t.closest('.brow');
+    if (rowEl) {
+      rowEl.classList.toggle('ok', !!data.claims[id]);
+      var dot = rowEl.querySelector('.bdot');
+      if (dot) dot.textContent = data.claims[id] ? 'оформлено' : rowEl.getAttribute('data-kind');
+      var lbl = rowEl.querySelector('.bclaim span');
+      if (lbl) lbl.textContent = data.claims[id] ? 'Оформлено — отлично' : 'Отметьте, когда оформите';
+    }
+    if (curTab === 'analytics') renderAnalytics();
+  });
 }
 
 /* =====================================================================
@@ -1922,10 +2446,17 @@ function applyImport(d) {
   data = {
     version: 1,
     income: isFiniteNum(d.income) ? d.income : 0,
+    region: (typeof d.region === 'string') ? d.region : '',
+    housing: (typeof d.housing === 'string') ? d.housing : '',
+    cars: (typeof d.cars === 'string') ? d.cars : '',
+    employment: (typeof d.employment === 'string') ? d.employment : '',
+    familyNotes: (typeof d.familyNotes === 'string') ? d.familyNotes : '',
     members: (Array.isArray(d.members) && d.members.length > 0) ? d.members : [{ id: 'me', name: 'Я' }],
     categories: (Array.isArray(d.categories) && d.categories.length > 0) ? d.categories : defaultData().categories,
     expenses: Array.isArray(d.expenses) ? d.expenses : [],
     regulars: Array.isArray(d.regulars) ? d.regulars : [],
+    claims: (d.claims && typeof d.claims === 'object' && !Array.isArray(d.claims)) ? d.claims : {},
+    claimsNotes: typeof d.claimsNotes === 'string' ? d.claimsNotes : '',
   };
   persist();
   renderHeader();
@@ -1942,14 +2473,25 @@ function initExport() {
 
   $('#exCopyAi').addEventListener('click', function () {
     copyText(buildAiSummary(data, exPeriod)).then(function (ok) {
-      toast(ok ? 'Сводка скопирована' : 'Не удалось скопировать',
-        ok ? 'Вставьте текст в чат (долгое нажатие → «Вставить»)' : 'Попробуйте скачать файл и прикрепить его к сообщению');
+      toast(ok ? 'Запрос для ИИ скопирован' : 'Не удалось скопировать',
+        ok ? 'Вставьте в любой ИИ: ChatGPT, Gemini, Claude… (долгое нажатие → «Вставить»)' : 'Попробуйте скачать файл и прикрепить его к сообщению');
     });
   });
 
   $('#exDlTxt').addEventListener('click', function () {
     dl('svodka-' + exPeriod + '-' + todayISO() + '.txt', buildAiSummary(data, exPeriod), 'text/plain;charset=utf-8', 'Файл скачан');
   });
+
+  var shareBtn = $('#exShareAi');
+  if (shareBtn && navigator.share) shareBtn.hidden = false;
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function () {
+      var text = buildAiSummary(data, exPeriod);
+      navigator.share({ title: 'Запрос для ИИ', text: text })
+        .then(function () { toast('Запрос отправлен', 'Выберите приложение ИИ и вставьте текст'); })
+        .catch(function () { /* отмена — ничего не делаем */ });
+    });
+  }
 
   $('#exDlCsv').addEventListener('click', function () {
     dl('traty-' + exPeriod + '-' + todayISO() + '.csv', buildCsv(data, exPeriod), 'text/csv;charset=utf-8', 'CSV скачан');
@@ -1994,15 +2536,110 @@ function initExport() {
    ВКЛАДКА «НАСТРОЙКИ»
    ===================================================================== */
 
+/* Субъекты РФ для поля «Регион»: от него зависят региональные
+   льготы, субсидии и правила — попадает в готовый запрос для ИИ */
+var REGIONS = [
+  'Республика Адыгея',
+  'Алтайский край',
+  'Республика Алтай',
+  'Амурская область',
+  'Архангельская область',
+  'Астраханская область',
+  'Республика Башкортостан',
+  'Белгородская область',
+  'Брянская область',
+  'Республика Бурятия',
+  'Владимирская область',
+  'Волгоградская область',
+  'Вологодская область',
+  'Воронежская область',
+  'Республика Дагестан',
+  'Донецкая Народная Республика',
+  'Еврейская автономная область',
+  'Забайкальский край',
+  'Запорожская область',
+  'Республика Ингушетия',
+  'Ивановская область',
+  'Иркутская область',
+  'Кабардино-Балкарская Республика',
+  'Калининградская область',
+  'Республика Калмыкия',
+  'Калужская область',
+  'Камчатский край',
+  'Карачаево-Черкесская Республика',
+  'Республика Карелия',
+  'Кемеровская область — Кузбасс',
+  'Кировская область',
+  'Республика Коми',
+  'Республика Крым',
+  'Костромская область',
+  'Краснодарский край',
+  'Красноярский край',
+  'Курганская область',
+  'Курская область',
+  'Ленинградская область',
+  'Липецкая область',
+  'Луганская Народная Республика',
+  'Магаданская область',
+  'Республика Марий Эл',
+  'Республика Мордовия',
+  'Москва',
+  'Московская область',
+  'Мурманская область',
+  'Ненецкий автономный округ',
+  'Нижегородская область',
+  'Новгородская область',
+  'Новосибирская область',
+  'Омская область',
+  'Оренбургская область',
+  'Орловская область',
+  'Пензенская область',
+  'Пермский край',
+  'Приморский край',
+  'Псковская область',
+  'Ростовская область',
+  'Рязанская область',
+  'Самарская область',
+  'Санкт-Петербург',
+  'Саратовская область',
+  'Республика Саха (Якутия)',
+  'Сахалинская область',
+  'Свердловская область',
+  'Республика Северная Осетия — Алания',
+  'Севастополь',
+  'Смоленская область',
+  'Ставропольский край',
+  'Республика Татарстан',
+  'Республика Тыва',
+  'Тамбовская область',
+  'Тверская область',
+  'Томская область',
+  'Тульская область',
+  'Тюменская область',
+  'Удмуртская Республика',
+  'Ульяновская область',
+  'Республика Хакасия',
+  'Хабаровский край',
+  'Ханты-Мансийский автономный округ — Югра',
+  'Херсонская область',
+  'Челябинская область',
+  'Чеченская Республика',
+  'Чувашская Республика',
+  'Чукотский автономный округ',
+  'Ямало-Ненецкий автономный округ',
+  'Ярославская область',
+];
+
 var PALETTE = ['#059669', '#0891b2', '#7c3aed', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#14b8a6', '#64748b'];
 
 function renderSettings() {
-  $('#setMembers').innerHTML = data.members.length
-    ? '<div class="mchips">' + data.members.map(function (m) {
-        return '<span class="mchip">' + esc(m.name) +
-          '<button type="button" data-delmember="' + esc(m.id) + '" aria-label="Удалить ' + esc(m.name) + '">' + XICON + '</button></span>';
-      }).join('') + '</div>'
-    : '';
+  $('#setMembers').innerHTML = data.members.map(function (m) {
+    return '<div class="mrow">' +
+      '<input class="inp" data-mname="' + esc(m.id) + '" maxlength="30" placeholder="Имя" value="' + esc(m.name) + '">' +
+      '<input class="inp myear" data-myear="' + esc(m.id) + '" inputmode="numeric" maxlength="4" placeholder="год рожд." value="' + (m.year ? String(m.year) : '') + '">' +
+      '<button type="button" class="iconbtn" data-delmember="' + esc(m.id) + '" aria-label="Удалить ' + esc(m.name) + '">' + XICON + '</button></div>';
+  }).join('');
+  updateFamilyInfo();
 
   $('#setCats').innerHTML = data.categories.map(function (c) {
     return '<div class="crow"><span style="color:' + c.color + ';display:flex">' + iconSVG(c.icon) + '</span>' +
@@ -2016,6 +2653,14 @@ function renderSettings() {
     : 'Выключите переключатель, чтобы спрятать ненужную категорию из ввода.';
 
   $('#setIncome').value = data.income > 0 ? String(data.income) : '';
+  $('#setRegion').innerHTML = '<option value="">— не выбран —</option>' + REGIONS.map(function (r) {
+    return '<option' + (data.region === r ? ' selected' : '') + '>' + esc(r) + '</option>';
+  }).join('');
+  $('#setRegion').value = data.region || '';
+  $('#setHousing').value = HOUSING_LABELS[data.housing] ? data.housing : '';
+  $('#setCars').value = CARS_LABELS[data.cars] ? data.cars : '';
+  $('#setEmployment').value = EMPLOYMENT_LABELS[data.employment] ? data.employment : '';
+  $('#setFamilyNotes').value = data.familyNotes || '';
 }
 
 function openCatDialog() {
@@ -2059,6 +2704,41 @@ function initSettings() {
     toast(n ? 'Доход сохранён' : 'Доход очищен', n ? $('#setIncome').value.replace('.', ',') + ' ₽/мес' : '');
   });
 
+  $('#setRegion').addEventListener('change', function () {
+    data.region = $('#setRegion').value;
+    persist();
+    toast(data.region ? 'Регион сохранён' : 'Регион очищен', data.region ? 'Льготы в запросе будут по вашим правилам' : '');
+    if (curTab === 'export') renderExport();
+  });
+
+  $('#setHousing').addEventListener('change', function () {
+    data.housing = $('#setHousing').value;
+    persist();
+    toast(data.housing ? 'Жильё сохранено' : 'Жильё очищено', data.housing ? 'Ипотека и аренда учтутся в льготах и запросе' : '');
+    if (curTab === 'analytics') renderAnalytics();
+  });
+
+  $('#setCars').addEventListener('change', function () {
+    data.cars = $('#setCars').value;
+    persist();
+    toast(data.cars ? 'Автомобиль сохранён' : 'Поле очищено', data.cars ? 'Учтём транспортный налог в льготах' : '');
+    if (curTab === 'analytics') renderAnalytics();
+  });
+
+  $('#setEmployment').addEventListener('change', function () {
+    data.employment = $('#setEmployment').value;
+    persist();
+    toast(data.employment ? 'Работа сохранена' : 'Поле очищено', data.employment ? 'От этого зависят налоговые вычеты' : '');
+    if (curTab === 'analytics') renderAnalytics();
+  });
+
+  $('#setFamilyNotesOk').addEventListener('click', function () {
+    data.familyNotes = $('#setFamilyNotes').value.trim();
+    persist();
+    toast(data.familyNotes ? 'Заметка о семье сохранена' : 'Заметка очищена', data.familyNotes ? 'Попадёт в запрос для ИИ' : '');
+    if (curTab === 'export') renderExport();
+  });
+
   $('#setMemberAdd').addEventListener('click', function () {
     var name = $('#setMemberName').value.trim();
     if (!name) return;
@@ -2078,6 +2758,41 @@ function initSettings() {
     persist();
     renderSettings();
     renderQuickAddState();
+  });
+
+  $('#setMembers').addEventListener('change', function (ev) {
+    var nameEl = ev.target.closest ? ev.target.closest('[data-mname]') : null;
+    var yearEl = ev.target.closest ? ev.target.closest('[data-myear]') : null;
+    var id = nameEl ? nameEl.getAttribute('data-mname') : (yearEl ? yearEl.getAttribute('data-myear') : null);
+    if (!id) return;
+    var m = null;
+    for (var i = 0; i < data.members.length; i++) if (data.members[i].id === id) m = data.members[i];
+    if (!m) return;
+    if (nameEl) {
+      var name = nameEl.value.trim();
+      if (name) m.name = name;
+      nameEl.value = m.name;
+      persist();
+      renderQuickAddState();
+    } else if (yearEl) {
+      var raw = yearEl.value.replace(/\D/g, '');
+      yearEl.value = raw;
+      if (!raw) {
+        m.year = undefined;
+      } else {
+        var y = parseInt(raw, 10);
+        var nowY = new Date().getFullYear();
+        if (y < 1900 || y > nowY) {
+          toast('Проверьте год рождения', 'От 1900 до ' + nowY);
+          yearEl.value = m.year ? String(m.year) : '';
+          return;
+        }
+        m.year = y;
+      }
+      persist();
+      updateFamilyInfo();
+      if (curTab === 'analytics') renderAnalytics();
+    }
   });
 
   $('#setCatAdd').addEventListener('click', openCatDialog);
